@@ -24,7 +24,8 @@
 * **Deployment:** Firebase Hosting, Vercel
 
 ## 폴더 구조
-,,,
+
+```
 CCT/
 ├── frontend/                   # 프론트엔드 (React + xterm.js)
 │   └── src/
@@ -39,18 +40,18 @@ CCT/
 │       └── utils/              # 유틸 함수
 │
 └── backend/                    # 백엔드 (Node.js + Express)
-├── database/
-│   ├── migrations/         # DB 테이블 생성 스크립트
-│   └── seeds/              # 초기 데이터
-├── src/
-│   ├── controllers/        # API 요청 처리
-│   ├── routes/             # API 라우터
-│   ├── services/
-│   │   ├── grader/         # 명령어 채점 로직
-│   │   └── simulator/      # Git 상태 시뮬레이션
-│   └── data/               # 스테이지 데이터
-└── knexfile.js
-,,,
+    ├── database/
+    │   ├── migrations/         # DB 테이블 생성 스크립트
+    │   └── seeds/              # 초기 데이터
+    ├── src/
+    │   ├── controllers/        # API 요청 처리
+    │   ├── routes/             # API 라우터
+    │   ├── services/
+    │   │   ├── grader/         # 명령어 채점 로직
+    │   │   └── simulator/      # Git 상태 시뮬레이션
+    │   └── data/               # 스테이지 데이터
+    └── knexfile.js
+```
 ## 🤝 협업 가이드
 * **Branch 전략:** `main` (배포), `develop` (통합), `feature/기능명` (개별 개발)
 * **커밋 규칙:** `feat:`, `fix:`, `docs:` 등의 접두사를 사용하여 명확하게 작성
