@@ -1,10 +1,10 @@
-##💻 CommandCraftTutorial
-###"터미널 명령어를 게임처럼 즐겁게 배우는 인터랙티브 CLI 튜토리얼 서비스"
+💻 CommandCraftTutorial
+"터미널 명령어를 게임처럼 즐겁게 배우는 인터랙티브 CLI 튜토리얼 서비스"
 
-###🚀 프로젝트 소개
+🚀 프로젝트 소개
 CommandCraftTutorial은 초보 개발자가 Git과 Linux 등 필수 CLI(Command Line Interface) 명령어들을 가상의 터미널 환경에서 직접 입력하며 단계별로 정복해 나가는 교육용 서비스입니다. 단순 이론 학습에서 벗어나 실습 위주의 인터랙티브한 경험을 제공합니다.
 
-###🛠 주요 기능
+🛠 주요 기능
 가상 터미널 구현: xterm.js를 활용하여 웹 브라우저 내에서 실제 터미널과 동일한 환경 제공
 
 단계별 튜토리얼: 기초(init, add)부터 심화(branch, merge)까지 이어지는 스테이지별 미션
@@ -13,7 +13,7 @@ CommandCraftTutorial은 초보 개발자가 Git과 Linux 등 필수 CLI(Command 
 
 실시간 랭킹 시스템: 전체 사용자들의 학습 속도 및 클리어 현황 확인
 
-###👥 팀원 역할 분담
+👥 팀원 역할 분담
 역할	담당자	핵심 업무
 터미널 엔진	[이름]	xterm.js 터미널 UI 구현, 이벤트 제어
 명령어 로직	[이름]	입력값 파싱, 스테이지별 정답 판별 로직 구현
@@ -25,7 +25,7 @@ Backend/DB: Firebase (Firestore, Auth)
 
 Deployment: Firebase Hosting, Vercel
 
-###📅 개발 일정 (6주)
+📅 개발 일정 (6주)
 1-2주: 프로젝트 설계 및 DB 스키마 디자인, 기본 터미널 UI 구현
 
 3-4주: 명령어 파싱 로직 및 정답 판별 시스템 개발
