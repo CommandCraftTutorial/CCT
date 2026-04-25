@@ -10,8 +10,8 @@ router.post('/login', async (req, res) => {
     let user = await db('users').where({ username }).first()
 
     if (!user) {
-      const [id] = await db('users').insert({ username }).returning('id')
-      user = await db('users').where({ id }).first()
+      const result = await db('users').insert({ username }).returning('*')
+      user = result[0]
     }
 
     res.json(user)
