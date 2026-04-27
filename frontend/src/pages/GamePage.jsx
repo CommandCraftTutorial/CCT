@@ -7,6 +7,8 @@ export default function GamePage() {
   const [stage, setStage] = useState(null)
   const [stageId, setStageId] = useState(1)
   const [score, setScore] = useState(0)
+  const [showHint, setShowHint] = useState(false)
+  const [wrongCount, setWrongCount] = useState(0)
   const navigate = useNavigate()
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -37,7 +39,8 @@ export default function GamePage() {
           setTimeout(() => navigate('/clear'), 2000)
         }
       } else {
-        term.writeln(`💡 힌트: ${stage?.hint}`)
+        setWrongCount(prev => prev + 1) 
+        term.writeln(`❌ 틀렸습니다. 힌트 버튼을 눌러보세요!`)
       }
     } catch (err) {
       term.writeln('❌ 서버 오류가 발생했습니다.')
@@ -136,6 +139,7 @@ export default function GamePage() {
           <p style={{ margin: '0 0 10px', color: '#a6adc8', fontSize: '13px', lineHeight: '1.6' }}>
             {stage?.description}
           </p>
+          {/* 미션박스 */}
           <div style={{
             display: 'inline-flex',
             alignItems: 'center',
@@ -151,6 +155,43 @@ export default function GamePage() {
             </span>
           </div>
         </div>
+
+        {/* 힌트 버튼 - 틀렸을 때만 표시 */}
+        {wrongCount > 0 && (
+          <div style={{ marginTop: '12px' }}>
+            <button
+              onClick={() => setShowHint(!showHint)}
+              style={{
+                padding: '6px 14px',
+                borderRadius: '6px',
+                border: '1px solid #f9e2af',
+                background: 'transparent',
+                color: '#f9e2af',
+                fontSize: '12px',
+                cursor: 'pointer',
+                fontFamily: 'Menlo, Monaco, monospace',
+              }}
+            >
+              💡 힌트 {showHint ? '숨기기' : '보기'}
+            </button>
+
+            {showHint && (
+              <div style={{
+                marginTop: '8px',
+                padding: '10px 14px',
+                background: '#2a2a1a',
+                border: '1px solid #f9e2af',
+                borderRadius: '6px',
+                color: '#f9e2af',
+                fontSize: '13px',
+                lineHeight: '1.6',
+              }}>
+                💡 {stage?.hint}
+              </div>
+            )}
+          </div>
+        )}
+
 
         {/* 진행률 */}
         <div style={{ minWidth: '120px' }}>
