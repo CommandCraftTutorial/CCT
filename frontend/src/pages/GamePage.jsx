@@ -21,6 +21,8 @@ export default function GamePage() {
       return
     }
     getStage(stageId).then(res => setStage(res.data))
+    setShowHint(false)
+    setWrongCount(0)  
   }, [stageId])
 
   const handleCommand = async (command, term) => {
@@ -80,6 +82,91 @@ export default function GamePage() {
           zIndex: 999,
           animation: overlay === 'fail' ? 'shake 0.4s ease' : 'none',
         }} />
+      )}
+
+      {/* 힌트 모달 */}
+      {showHint && (
+        <div
+          onClick={() => setShowHint(false)}
+          style={{
+            position: 'fixed',
+            top: 0, left: 0, right: 0, bottom: 0,
+            background: 'rgba(0, 0, 0, 0.7)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+          }}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{
+              background: '#13131f',
+              border: '1px solid #f9e2af',
+              borderRadius: '12px',
+              padding: '32px',
+              maxWidth: '420px',
+              width: '90%',
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '16px',
+            }}
+          >
+            {/* 모달 헤더 */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+            }}>
+              <span style={{ color: '#f9e2af', fontSize: '16px', fontWeight: 'bold' }}>
+                💡 힌트
+              </span>
+              <button
+                onClick={() => setShowHint(false)}
+                style={{
+                  background: 'transparent',
+                  border: 'none',
+                  color: '#6c7086',
+                  fontSize: '18px',
+                  cursor: 'pointer',
+                }}
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* 구분선 */}
+            <div style={{ height: '1px', background: '#2a2a3d'}} />
+
+            {/* 힌트 내용 */}
+            <p style={{
+              color: '#f9e2af',
+              fontSize: '14px',
+              lineHeight: '1.8',
+              margin: 0,
+            }}>
+              {stage?.hint}
+            </p>
+
+            {/* 닫기 버튼 */}
+            <button
+              onClick={() => setShowHint(false)}
+              style={{
+                padding: '10px',
+                borderRadius: '8px',
+                border: '1px solid #f9e2af',
+                background: 'transparent',
+                color: '#f9e2af',
+                fontSize: '13px',
+                cursor: 'pointer',
+                fontFamily: 'Menlo, Monaco, monospace',
+                marginTop: '8px',
+              }}
+            >
+              닫기
+            </button>
+          </div>
+        </div>
       )}
 
       {/* 상단 헤더 */}
@@ -182,40 +269,24 @@ export default function GamePage() {
         </div>
 
         {/* 힌트 버튼 - 틀렸을 때만 표시 */}
-        {wrongCount > 0 && (
-          <div style={{ marginTop: '12px' }}>
-            <button
-              onClick={() => setShowHint(!showHint)}
-              style={{
-                padding: '6px 14px',
-                borderRadius: '6px',
-                border: '1px solid #f9e2af',
-                background: 'transparent',
-                color: '#f9e2af',
-                fontSize: '12px',
-                cursor: 'pointer',
-                fontFamily: 'Menlo, Monaco, monospace',
-              }}
-            >
-              💡 힌트 {showHint ? '숨기기' : '보기'}
-            </button>
-
-            {showHint && (
-              <div style={{
-                marginTop: '8px',
-                padding: '10px 14px',
-                background: '#2a2a1a',
-                border: '1px solid #f9e2af',
-                borderRadius: '6px',
-                color: '#f9e2af',
-                fontSize: '13px',
-                lineHeight: '1.6',
-              }}>
-                💡 {stage?.hint}
-              </div>
-            )}
-          </div>
-        )}
+        <div style={{ marginTop: '12px' }}>
+          <button
+            onClick={() => setShowHint(true)}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              border: '1px solid #f9e2af',
+              background: 'transparent',
+              color: '#f9e2af',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontFamily: 'Menlo, Monaco, monospace',
+            }}
+          >
+            💡 힌트 보기
+          </button>
+        </div>
+        
 
 
         {/* 진행률 */}
