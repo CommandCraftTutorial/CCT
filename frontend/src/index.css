@@ -10,3 +10,31 @@ html, body, #root {
   overflow: hidden;
   background: #0f0f17;
 }
+
+@keyframes flashSuccess {
+  0% { background: #0f0f17; }
+  30% { background: #1a3a2a; }
+  100% { background: #0f0f17; }
+}
+
+@keyframes flashFail {
+  0% { background: #0f0f17; }
+  30% { background: #3a1a1a; }
+  100% { background: #0f0f17; }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20% { transform: translateX(-8px); }
+  40% { transform: translateX(8px); }
+  60% { transform: translateX(-8px); }
+  80% { transform: translateX(8px); }
+}
+
+.flash-success {
+  animation: flashSuccess 0.6s ease;
+}
+
+.flash-fail {
+  animation: flashFail 0.6s ease, shake 0.4s ease;
+}
