@@ -10,6 +10,8 @@ export default function GamePage() {
   const [showHint, setShowHint] = useState(false)
   const [wrongCount, setWrongCount] = useState(0)
   const navigate = useNavigate()
+  //const [animClass, setAnimClass] = useState('')
+  const [overlay, setOverlay] = useState(null) // 'success' | 'fail' | null
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -30,6 +32,10 @@ export default function GamePage() {
         const newScore = score + 100
         setScore(newScore)
         await updateProgress(user.id, data.nextStageId, newScore)
+        setOverlay('success')
+        setTimeout(() => setOverlay(null), 600)
+        //setAnimClass('flash-success')
+        //setTimeout(() => setAnimClass(''),600) 
 
         if (data.nextStageId && data.nextStageId <= 5) {
           term.writeln('🎉 성공! 다음 스테이지로 이동합니다...')
@@ -40,6 +46,10 @@ export default function GamePage() {
         }
       } else {
         setWrongCount(prev => prev + 1) 
+        setOverlay('fail')
+        setTimeout(() => setOverlay(null), 600)
+        //setAnimClass('flash-fail')
+        //setTimeout(() => setAnimClass(''), 600)
         term.writeln(`❌ 틀렸습니다. 힌트 버튼을 눌러보세요!`)
       }
     } catch (err) {
@@ -48,14 +58,29 @@ export default function GamePage() {
   }
 
   return (
-    <div style={{
+    <div 
+      //className = {animClass}
+      style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100vh',
-      background: '#0f0f17',
       color: '#cdd6f4',
       fontFamily: 'Menlo, Monaco, monospace',
+      // background:'#0f0f17'
+      position: 'relative', 
     }}>
+
+      {/* 오버레이 */}
+      {overlay && (
+        <div style={{
+          position: 'absolute',
+          top: 0, left: 0, right: 0, bottom: 0,
+          background: overlay === 'success' ? 'rgba(166, 227, 161, 0.15)' : 'rgba(243, 139, 168, 0.15)',
+          pointerEvents: 'none',
+          zIndex: 999,
+          animation: overlay === 'fail' ? 'shake 0.4s ease' : 'none',
+        }} />
+      )}
 
       {/* 상단 헤더 */}
       <div style={{
