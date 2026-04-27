@@ -67,10 +67,25 @@ export default function GamePage() {
           🖥️ CLI Tutorial
         </span>
         <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
-          <span style={{ color: '#f9e2af', fontSize: '13px' }}>🏆 {score}점</span>
-        </div>
+          <button
+            onClick={() => navigate('/stages')}
+            style={{
+             padding: '6px 14px',
+            borderRadius: '6px',
+            border: '1px solid #2a2a3d',
+            background: 'transparent',
+            color: '#a6adc8',
+            fontSize: '12px',
+            cursor: 'pointer',
+            fontFamily: 'Menlo, Monaco, monospace',
+          }}
+        >
+          📋 목록
+        </button>
+        <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
+        <span style={{ color: '#f9e2af', fontSize: '13px' }}>🏆 {score}점</span>
       </div>
+    </div>
 
       {/* 미션 패널 (위) */}
       <div style={{
