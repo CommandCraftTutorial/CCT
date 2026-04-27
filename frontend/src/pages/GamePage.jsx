@@ -34,7 +34,7 @@ export default function GamePage() {
           setTimeout(() => setStageId(data.nextStageId), 1500)
         } else {
           term.writeln('🏆 모든 스테이지를 완료했습니다!')
-          term.writeln('🎊 축하합니다! 튜토리얼을 전부 완료했어요!')
+          setTimeout(() => navigate('/clear'), 2000)
         }
       } else {
         term.writeln(`💡 힌트: ${stage?.hint}`)
