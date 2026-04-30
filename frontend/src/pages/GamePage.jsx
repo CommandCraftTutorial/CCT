@@ -34,7 +34,7 @@ export default function GamePage() {
         setStageIds(data.map(s => s.id))
         if (data.length > 0) {
           getStage(data[0].id).then(res => {
-            setStage(res.data))
+            setStage(res.data)
             setShowHint(false)
             setWrongCount(0)
           })
