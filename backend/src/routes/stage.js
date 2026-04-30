@@ -4,6 +4,22 @@ const db = require('../db')
 const { gradeCommand } = require('../services/grader/grader')
 const { applyCommand } = require('../services/simulator/gitSimulator')
 
+// 카테고리별 스테이지 조회
+router.get('/category/:category', async (req, res) => {
+  try {
+    const { category } = req.params
+    const { difficulty } = req.query
+    
+    let query = db('stages').where({ category })
+    if (difficulty) query = query.where({ difficulty })
+    
+    const stages = await query.select('id', 'title', 'mission', 'difficulty', 'category')
+    res.json(stages)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 // 스테이지 전체 조회
 router.get('/', async (req, res) => {
   try {

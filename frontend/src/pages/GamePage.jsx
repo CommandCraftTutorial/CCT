@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
 import { getStage, submitCommand, updateProgress } from '../services/api'
+import { useLocation } from 'react-router-dom'
 import './GamePage.css'
 
 export default function GamePage() {
@@ -15,16 +16,32 @@ export default function GamePage() {
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
+  // gameConfig 불러오기
+  const gameConfig = JSON.parse(localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}')
+  // stageIds 상태 추가
+  const [stageIds, setStageIds] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+
   useEffect(() => {
     if (!user.id) {
       navigate('/')
       return
     }
-
-    getStage(stageId).then(res => setStage(res.data))
-    setShowHint(false)
-    setWrongCount(0)
-  }, [stageId, navigate, user.id])
+    // 카테고리 + 난이도로 스테이지 목록 가져오기
+    fetch(`http://localhost:3000/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`)
+      .then(res => res.json())
+      .then(data => {
+        setStageIds(data.map(s => s.id))
+        if (data.length > 0) {
+          getStage(data[0].id).then(res => {
+            setStage(res.data))
+            setShowHint(false)
+            setWrongCount(0)
+          })
+          setStageId(data[0].id)
+        }
+      })
+  }, [gameConfig.category, gameConfig.difficulty, stageId, navigate, user.id])
 
   const handleCommand = async (command, term) => {
     try {
@@ -34,14 +51,24 @@ export default function GamePage() {
       if (data.passed) {
         const newScore = score + 100
         setScore(newScore)
+
+        const nextIndex = currentIndex + 1
+
+
         await updateProgress(user.id, data.nextStageId, newScore)
 
         setOverlay('success')
         setTimeout(() => setOverlay(null), 600)
 
-        if (data.nextStageId && data.nextStageId <= 5) {
+        if (nextIndex < stageIds.length) {
           term.writeln('🎉 성공! 다음 스테이지로 이동합니다...')
-          setTimeout(() => setStageId(data.nextStageId), 1500)
+          setTimeout(() => {
+            setCurrentIndex(nextIndex)
+            setStageId(stageIds[nextIndex])
+            getStage(stageIds[nextIndex]).then(res => setStage(res.data))
+            setShowHint(false)
+            setWrongCount(0)
+          }, 1500)
         } else {
           term.writeln('🏆 모든 스테이지를 완료했습니다!')
           setTimeout(() => navigate('/clear'), 2000)

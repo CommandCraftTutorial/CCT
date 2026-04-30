@@ -10,7 +10,7 @@ export default function LoginPage() {
     if (!username.trim()) return
     const { data } = await loginUser(username)
     localStorage.setItem('user', JSON.stringify(data))
-    navigate('/game')
+    navigate('/category')
   }
 
   return (
