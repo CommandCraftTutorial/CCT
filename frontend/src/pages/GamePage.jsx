@@ -34,7 +34,7 @@ export default function GamePage() {
         setStageIds(data.map(s => s.id))
         if (data.length > 0) {
           getStage(data[0].id).then(res => {
-            setStage(res.data))
+            setStage(res.data)
             setShowHint(false)
             setWrongCount(0)
           })
@@ -51,6 +51,8 @@ export default function GamePage() {
       if (data.passed) {
         const newScore = score + 100
         setScore(newScore)
+
+        term.writeln(`🏆 +100점 획득! 현재 점수: ${newScore}점`)
 
         const nextIndex = currentIndex + 1
 
@@ -116,9 +118,14 @@ export default function GamePage() {
       )}
 
       <header className="game-header">
-        <span className="game-logo">🖥️ CLI Tutorial</span>
+        <span className="game-logo">🖥️ CommandCraftTutorial</span>
 
         <div className="game-header-right">
+          <button className="btn-exit"
+            onClick={() => navigate('/category')}
+          >
+            ✕ 나가기
+          </button>
           <button className="stage-list-button" onClick={() => navigate('/stages')}>
             📋 목록
           </button>

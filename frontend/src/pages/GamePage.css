@@ -201,6 +201,16 @@
   border: 1px solid #fab387;
 }
 
+.btn-exit {
+  padding: 6px 12px;
+  border-radius: 6px;
+  border: 1px solid #ff5555; /* 원하는 테두리 색상 */
+  background: transparent;
+  color: #ff5555;             /* 원하는 글자 색상 */
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
 .mission-description {
   margin: 0 0 10px;
   color: #a6adc8;
