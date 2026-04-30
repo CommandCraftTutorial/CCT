@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
 import { getStage, submitCommand, updateProgress } from '../services/api'
+import { useLocation } from 'react-router-dom'
 
 export default function GamePage() {
   const [stage, setStage] = useState(null)
@@ -15,15 +16,29 @@ export default function GamePage() {
 
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
+  // gameConfig 불러오기
+  const gameConfig = JSON.parse(localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}')
+  // stageIds 상태 추가
+  const [stageIds, setStageIds] = useState([])
+  const [currentIndex, setCurrentIndex] = useState(0)
+
   useEffect(() => {
     if (!user.id) {
       navigate('/')
       return
     }
-    getStage(stageId).then(res => setStage(res.data))
-    setShowHint(false)
-    setWrongCount(0)  
-  }, [stageId])
+
+    // 카테고리 + 난이도로 스테이지 목록 가져오기
+    fetch(`http://localhost:3000/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`)
+      .then(res => res.json())
+      .then(data => {
+        setStageIds(data.map(s => s.id))
+        if (data.length > 0) {
+          getStage(data[0].id).then(res => setStage(res.data))
+          setStageId(data[0].id)
+        }
+      })
+  }, [])
 
   const handleCommand = async (command, term) => {
     try {
