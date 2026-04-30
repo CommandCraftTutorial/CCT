@@ -11,24 +11,40 @@
 * **학습 기록 관리:** 사용자별 학습 진도 및 정답 여부 실시간 DB 연동
 * **실시간 랭킹 시스템:** 전체 사용자들의 학습 속도 및 클리어 현황 확인
 
-## 👥 팀원 역할 분담
-| 역할 | 담당자 | 핵심 업무 |
-| :--- | :--- | :--- |
-| **터미널 엔진** | 이름 | xterm.js 터미널 UI 구현, 이벤트 제어 |
-| **명령어 로직** | 이름 | 입력값 파싱, 스테이지별 정답 판별 로직 구현 |
-| **DB & 데이터** | 이름 | Firebase 연동, 스테이지 데이터 설계, 배포 |
-
 ## ⚙️ 기술 스택
 * **Frontend:** React, Tailwind CSS, xterm.js
 * **Backend/DB:** Firebase (Firestore, Auth)
 * **Deployment:** Firebase Hosting, Vercel
 
-## 📅 개발 일정 (6주)
-* **1-2주:** 프로젝트 설계 및 DB 스키마 디자인, 기본 터미널 UI 구현
-* **3-4주:** 명령어 파싱 로직 및 정답 판별 시스템 개발
-* **5주:** Firebase 로그인 및 진도율 저장 기능 연동
-* **6주:** 랭킹 대시보드 완성, 배포 및 버그 수정
+## 폴더 구조
 
+```
+CCT/
+├── frontend/                   # 프론트엔드 (React + xterm.js)
+│   └── src/
+│       ├── components/
+│       │   ├── Terminal/       # 터미널 UI 컴포넌트
+│       │   ├── StagePanel/     # 미션 설명 패널
+│       │   └── FeedbackModal/  # 성공/실패 피드백
+│       ├── hooks/              # 커스텀 훅
+│       ├── pages/              # 페이지 컴포넌트
+│       ├── services/           # API 호출
+│       ├── store/              # 전역 상태 관리
+│       └── utils/              # 유틸 함수
+│
+└── backend/                    # 백엔드 (Node.js + Express)
+    ├── database/
+    │   ├── migrations/         # DB 테이블 생성 스크립트
+    │   └── seeds/              # 초기 데이터
+    ├── src/
+    │   ├── controllers/        # API 요청 처리
+    │   ├── routes/             # API 라우터
+    │   ├── services/
+    │   │   ├── grader/         # 명령어 채점 로직
+    │   │   └── simulator/      # Git 상태 시뮬레이션
+    │   └── data/               # 스테이지 데이터
+    └── knexfile.js
+```
 ## 🤝 협업 가이드
 * **Branch 전략:** `main` (배포), `develop` (통합), `feature/기능명` (개별 개발)
 * **커밋 규칙:** `feat:`, `fix:`, `docs:` 등의 접두사를 사용하여 명확하게 작성
