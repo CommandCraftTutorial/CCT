@@ -23,7 +23,7 @@ export default function LoginPage() {
       background: '#1e1e2e',
       color: '#cdd6f4'
     }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>🖥️ CLI Tutorial</h1>
+      <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>🖥️ CommandCraftTutorial</h1>
       <p style={{ color: '#a6adc8', marginBottom: '32px' }}>
         Git 명령어를 게임처럼 배워보세요
       </p>

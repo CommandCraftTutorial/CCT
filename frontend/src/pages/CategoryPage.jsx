@@ -51,7 +51,7 @@ export default function CategoryPage() {
         borderBottom: '1px solid #2a2a3d',
       }}>
         <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1' }}>
-          🖥️ CLI Tutorial
+          🖥️ CommandCraftTutorial
         </span>
         <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
       </div>
