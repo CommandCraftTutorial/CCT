@@ -48,15 +48,25 @@ export default function GamePage() {
       if (data.passed) {
         const newScore = score + 100
         setScore(newScore)
+
+        const nextIndex = currentIndex + 1
+
+
         await updateProgress(user.id, data.nextStageId, newScore)
         setOverlay('success')
         setTimeout(() => setOverlay(null), 600)
         //setAnimClass('flash-success')
         //setTimeout(() => setAnimClass(''),600) 
 
-        if (data.nextStageId && data.nextStageId <= 5) {
+        if (nextIndex < stageIds.length) {
           term.writeln('🎉 성공! 다음 스테이지로 이동합니다...')
-          setTimeout(() => setStageId(data.nextStageId), 1500)
+          setTimeout(() => {
+            setCurrentIndex(nextIndex)
+            setStageId(stageIds[nextIndex])
+            getStage(stageIds[nextIndex]).then(res => setStage(res.data))
+            setShowHint(false)
+            setWrongCount(0)
+          }, 1500)
         } else {
           term.writeln('🏆 모든 스테이지를 완료했습니다!')
           setTimeout(() => navigate('/clear'), 2000)
