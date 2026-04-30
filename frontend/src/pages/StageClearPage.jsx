@@ -1,13 +1,20 @@
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useLocation } from 'react-router-dom'; // 1. useLocation 추가 필수!
 
 export default function StageClearPage() {
-  const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const navigate = useNavigate();
+  const location = useLocation(); // 2. 정상적으로 호출
+  
+  // 3. Optional Chaining(?.)을 사용해 데이터가 없을 때의 에러 방지
+  const total = location.state?.total || 5;
+  const finalScore = location.state?.finalScore || 0;
+
+  const user = JSON.parse(localStorage.getItem('user') || '{}');
 
   const handleRestart = () => {
-    localStorage.removeItem('user')
-    navigate('/')
-  }
+    // 주의: 유저 정보를 지우면 로그인이 풀릴 수 있으니, 
+    // 게임 데이터만 초기화하고 싶다면 score만 0으로 바꾸는 것이 좋습니다.
+    navigate('/category')
+  };
 
   return (
     <div style={{
@@ -70,7 +77,8 @@ export default function StageClearPage() {
           borderBottom: '1px solid #2a2a3d',
         }}>
           <span style={{ color: '#6c7086', fontSize: '13px' }}>완료 스테이지</span>
-          <span style={{ color: '#a6e3a1', fontSize: '13px' }}>5 / 5</span>
+          {/* 전달받은 total 값을 사용하여 표시 */}
+          <span style={{ color: '#cdd6f4', fontSize: '13px' }}>{total} / {total}</span>
         </div>
         <div style={{
           display: 'flex',
@@ -79,7 +87,7 @@ export default function StageClearPage() {
         }}>
           <span style={{ color: '#6c7086', fontSize: '13px' }}>최종 점수</span>
           <span style={{ color: '#f9e2af', fontSize: '20px', fontWeight: 'bold' }}>
-            🏆 {user.score || 500}점
+            🏆 {finalScore}점
           </span>
         </div>
       </div>
@@ -99,7 +107,7 @@ export default function StageClearPage() {
             fontFamily: 'Menlo, Monaco, monospace',
           }}
         >
-          🔄 다시 시작
+          🎮 스테이지
         </button>
         <button
           onClick={() => navigate('/game')}
@@ -115,7 +123,7 @@ export default function StageClearPage() {
             fontFamily: 'Menlo, Monaco, monospace',
           }}
         >
-          🎮 계속 연습하기
+          🔄 다시하기
         </button>
       </div>
 

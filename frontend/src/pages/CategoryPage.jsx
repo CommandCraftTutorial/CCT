@@ -67,10 +67,10 @@ export default function CategoryPage() {
         gap: '16px',
       }}>
         <h1 style={{ fontSize: '24px', color: '#a6e3a1', marginBottom: '8px' }}>
-          🎮 카테고리 선택
+          🎮 명령어 선택 🎮
         </h1>
         <p style={{ color: '#6c7086', fontSize: '13px', marginBottom: '24px' }}>
-          학습할 카테고리를 선택하세요
+          학습할 명령어를 선택하세요
         </p>
 
         <div style={{
