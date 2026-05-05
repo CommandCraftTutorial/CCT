@@ -6,9 +6,10 @@ export default function DifficultyPage() {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   const categoryInfo = {
-    git: { title: 'Git', icon: '🌿', color: 'F38BA8' },
+    git: { title: 'Git', icon: '🌿', color: 'A6E3A1' },
     linux: { title: 'Linux', icon: '🐧', color: '89B4FA' },
-    gdb: { title: 'GDB / FDB', icon: '🔍', color: 'CBA6F7' },
+    gdb: { title: 'GDB', icon: '🔍', color: 'F38BA8' },
+    pdb: { title: 'PDB', icon: '🐍', color: 'F9E2AF' },
   }
 
   const info = categoryInfo[category]
