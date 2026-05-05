@@ -59,7 +59,7 @@ export default function CategoryPage() {
         borderBottom: '1px solid #2a2a3d',
       }}>
         <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1' }}>
-          🖥️ CLI Tutorial
+          🖥️ CommandCraftTutorial
         </span>
         <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
       </div>
@@ -75,10 +75,10 @@ export default function CategoryPage() {
         gap: '16px',
       }}>
         <h1 style={{ fontSize: '24px', color: '#a6e3a1', margin: '0 0 8px' }}>
-          🎮 카테고리 선택
+          🎮 명령어 선택
         </h1>
         <p style={{ color: '#6c7086', fontSize: '13px', marginBottom: '24px' }}>
-          학습할 카테고리를 선택하세요
+          학습할 명령어를 선택하세요
         </p>
 
         <div style={{

@@ -65,7 +65,7 @@ export default function DifficultyPage() {
           onClick={() => navigate('/category')}
           style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1', cursor: 'pointer' }}
         >
-          ← 🖥️ CLI Tutorial
+          ← 🖥️ CommandCraftTutorial
         </span>
         <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
       </div>

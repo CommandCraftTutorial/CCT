@@ -49,6 +49,15 @@ exports.seed = async function(knex) {
       category: 'git'
     },
     {
+      title: '특정 파일 스테이징',
+      description: '특정 파일만 스테이징 영역에 추가하는 명령어.',
+      mission: '특정 파일 하나를 스테이징 영역에 추가하세요 (git add 파일명)',
+      answer_regex: '^git add (?!\\.$).+$',
+      hint: 'add 뒤에 파일 이름을 입력하세요',
+      difficulty: '기초',
+      category: 'git'
+    },
+    {
       title: '커밋 만들기',
       description: '스테이징된 파일을 메시지와 함께 커밋하는 명령어.',
       mission: '스테이징된 파일을 메시지와 함께 커밋하세요',
@@ -277,6 +286,35 @@ exports.seed = async function(knex) {
       difficulty: '심화',
       category: 'git'
     },
+    {
+      title: '직전 커밋 되돌리기',
+      description: '직전 커밋을 취소하되 변경 사항은 워킹 디렉토리에 남깁니다.',
+      mission: '직전 커밋을 soft 모드로 되돌리세요 (HEAD~1)',
+      answer: 'git reset --soft HEAD~1',
+      hint: 'reset 의 --soft 옵션과 HEAD~1 을 함께 사용합니다',
+      difficulty: '심화',
+      category: 'git'
+    },
+    {
+      title: '리베이스',
+      description: '커밋 히스토리를 깔끔하게 정리하기 위한 명령어.',
+      mission: '특정 브랜치 위로 rebase 하세요',
+      answer_regex: '^git rebase .+$',
+      hint: '"기반을 다시 잡다"라는 의미의 명령어입니다',
+      difficulty: '심화',
+      category: 'git'
+    },
+    {
+      title: '태그 만들기',
+      description: '특정 커밋에 버전 태그를 붙이는 명령어.',
+      mission: '새로운 태그를 생성하세요 (git tag 태그명)',
+      answer_regex: '^git tag (?!-).+$',
+      hint: 'tag 뒤에 v1.0 같은 태그 이름을 입력하세요',
+      difficulty: '심화',
+      category: 'git'
+    },
+  
+
 
     // ── Linux 기초 ──────────────────────────
     {
@@ -419,6 +457,63 @@ exports.seed = async function(knex) {
       category: 'linux'
     },
 
+    // ── Linux 심화 ──────────────────────────
+        {
+      title: '[Linux] 파일 내용 검색',
+      description: '파일에서 특정 패턴을 가진 줄을 찾아냅니다.',
+      mission: 'grep 으로 특정 패턴을 파일에서 찾으세요',
+      answer_regex: '^grep ".+" .+$',
+      hint: 'grep "패턴" 파일명 형식입니다',
+      difficulty: '심화',
+      category: 'linux'
+    },
+    {
+      title: '[Linux] 파일 찾기',
+      description: '디렉토리 안에서 이름으로 파일을 찾습니다.',
+      mission: '현재 디렉토리에서 특정 이름의 파일을 찾으세요',
+      answer_regex: '^find \\. -name ".+"$',
+      hint: 'find . -name "파일명" 형식입니다',
+      difficulty: '심화',
+      category: 'linux'
+    },
+    {
+      title: '[Linux] 권한 변경',
+      description: '파일의 읽기/쓰기/실행 권한을 변경합니다.',
+      mission: '파일의 권한을 755로 변경하세요',
+      answer_regex: '^chmod 755 .+$',
+      hint: 'chmod 다음에 권한 숫자와 파일명',
+      difficulty: '심화',
+      category: 'linux'
+    },
+
+    // ── GDB 기초 ──────────────────────────
+    {
+      title: 'GDB 실행',
+      description: 'GDB 디버거로 프로그램을 실행합니다.',
+      mission: 'program 파일을 GDB로 실행하세요',
+      answer: 'gdb program',
+      hint: 'gdb 뒤에 실행할 프로그램 이름을 입력하세요',
+      difficulty: '기초',
+      category: 'gdb'
+    },
+    {
+      title: '브레이크포인트 설정',
+      description: 'main 함수에 브레이크포인트를 설정합니다.',
+      mission: 'main 함수에 브레이크포인트를 설정하세요',
+      answer: 'break main',
+      hint: 'break 뒤에 함수 이름이나 줄 번호를 입력하세요',
+      difficulty: '기초',
+      category: 'gdb'
+    },
+    {
+      title: '프로그램 실행',
+      description: 'GDB에서 프로그램을 실행합니다.',
+      mission: 'GDB에서 프로그램을 실행하세요',
+      answer: 'run',
+      hint: 'run 명령어로 프로그램을 실행할 수 있습니다',
+      difficulty: '기초',
+      category: 'gdb'
+    },
     // ── GDB 기초 ──────────────────────────
     {
       title: 'GDB 실행',
@@ -466,10 +561,10 @@ exports.seed = async function(knex) {
       category: 'gdb'
     },
 
-    // ── GDB 중급 ──────────────────────────
+    //── GDB 중급 ──────────────────────────
     {
-      title: '줄 번호로 중단점 설정',
-      description: '특정 줄 번호에서 실행을 멈추도록 설정합니다.',
+      title: '[GDB] 중단점 설정',
+      description: '특정 줄 또는 함수에서 실행을 멈추도록 설정합니다.',
       mission: '특정 줄 번호에 중단점을 설정하세요',
       answer_regex: '^break \\d+$',
       hint: 'break 뒤에 줄 번호를 입력합니다',
@@ -477,34 +572,25 @@ exports.seed = async function(knex) {
       category: 'gdb'
     },
     {
-      title: '다음 줄 실행',
+      title: '[GDB] 다음 줄 실행',
       description: '함수 호출은 건너뛰고 다음 줄로 이동합니다.',
       mission: '함수 안에 들어가지 않고 다음 줄을 실행하세요',
       answer: 'next',
-      hint: '"다음"이라는 영어 단어입니다',
+      hint: '"다음"이라는 영어 단어',
       difficulty: '중급',
       category: 'gdb'
     },
     {
-      title: '함수 안으로 들어가기',
+      title: '[GDB] 함수 안으로 들어가기',
       description: '함수 호출 시 그 함수 내부로 들어갑니다.',
       mission: '함수 안으로 한 단계 들어가세요',
       answer: 'step',
-      hint: '"한 걸음"이라는 영어 단어입니다',
+      hint: '"한 걸음"이라는 영어 단어',
       difficulty: '중급',
       category: 'gdb'
     },
     {
-      title: '계속 실행',
-      description: '다음 중단점까지 프로그램을 계속 실행합니다.',
-      mission: '다음 중단점까지 계속 실행하세요',
-      answer: 'continue',
-      hint: '"계속하다"라는 영어 단어입니다',
-      difficulty: '중급',
-      category: 'gdb'
-    },
-    {
-      title: '변수 값 출력',
+      title: '[GDB] 변수 값 출력',
       description: '특정 변수의 현재 값을 출력합니다.',
       mission: '변수의 현재 값을 출력하세요',
       answer_regex: '^print .+$',
