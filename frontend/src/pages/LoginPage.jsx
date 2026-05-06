@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { loginUser } from '../services/api'
+import './LoginPage.css'
 
 export default function LoginPage() {
   const [username, setUsername] = useState('')
@@ -8,59 +9,68 @@ export default function LoginPage() {
 
   const handleLogin = async () => {
     if (!username.trim()) return
+
     const { data } = await loginUser(username)
     localStorage.setItem('user', JSON.stringify(data))
-    navigate('/category')
+    navigate('/game')
   }
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      height: '100vh',
-      background: '#1e1e2e',
-      color: '#cdd6f4'
-    }}>
-      <h1 style={{ fontSize: '2rem', marginBottom: '8px' }}>🖥️ CommandCraftTutorial</h1>
-      <p style={{ color: '#a6adc8', marginBottom: '32px' }}>
-        Git 명령어를 게임처럼 배워보세요
-      </p>
-      <input
-        type="text"
-        placeholder="닉네임 입력"
-        value={username}
-        onChange={(e) => setUsername(e.target.value)}
-        onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
-        style={{
-          padding: '12px 20px',
-          borderRadius: '8px',
-          border: '1px solid #45475a',
-          background: '#313244',
-          color: '#cdd6f4',
-          fontSize: '16px',
-          marginBottom: '16px',
-          width: '280px',
-          outline: 'none'
-        }}
-      />
-      <button
-        onClick={handleLogin}
-        style={{
-          padding: '12px 40px',
-          borderRadius: '8px',
-          border: 'none',
-          background: '#a6e3a1',
-          color: '#1e1e2e',
-          fontSize: '16px',
-          fontWeight: 'bold',
-          cursor: 'pointer',
-          width: '280px'
-        }}
-      >
-        시작하기
-      </button>
+    <div className="login-page">
+      <div className="login-bg-code">
+        <span>$ git init</span>
+        <span>$ git add .</span>
+        <span>$ git commit -m</span>
+        <span>$ git branch</span>
+        <span>$ git checkout</span>
+        <span>$ git push</span>
+      </div>
+
+      <main className="login-content">
+        <h1 className="login-brand">
+          <span className="login-prompt">&gt;_</span> CommandCraft
+        </h1>
+
+        <p className="login-subtitle">Git Command Adventure</p>
+        <p className="login-message">터미널 훈련에 접속하세요.</p>
+
+        <section className="login-card">
+          <div className="login-card-header">
+            <div className="window-dots">
+              <span />
+              <span />
+              <span />
+            </div>
+            <span>ACCESS TERMINAL</span>
+          </div>
+
+          <label className="login-label" htmlFor="access-id">
+            Access ID
+          </label>
+
+          <input
+            id="access-id"
+            className="login-input"
+            type="text"
+            placeholder="Access ID 입력..."
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLogin()}
+          />
+
+          <button className="login-button" onClick={handleLogin}>
+            &gt;_ ACCESS TERMINAL
+          </button>
+
+          <p className="login-help">
+            Enter 키로 접속
+          </p>
+        </section>
+
+        <p className="login-footer-text">
+          💡 Git 명령어를 게임처럼 배우고, 미션을 클리어하세요!
+        </p>
+      </main>
     </div>
   )
 }
