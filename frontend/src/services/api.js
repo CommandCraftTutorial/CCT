@@ -16,3 +16,6 @@ export const submitCommand = (stageId, command, userId) =>
 
 export const updateProgress = (userId, current_stage, score) =>
   api.patch(`/users/${userId}/progress`, { current_stage, score })
+
+export const getLeaderboard = () =>
+  api.get('/users/leaderboard')
