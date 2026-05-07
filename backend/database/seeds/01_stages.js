@@ -456,64 +456,6 @@ exports.seed = async function(knex) {
       difficulty: '심화',
       category: 'linux'
     },
-
-    // ── Linux 심화 ──────────────────────────
-        {
-      title: '[Linux] 파일 내용 검색',
-      description: '파일에서 특정 패턴을 가진 줄을 찾아냅니다.',
-      mission: 'grep 으로 특정 패턴을 파일에서 찾으세요',
-      answer_regex: '^grep ".+" .+$',
-      hint: 'grep "패턴" 파일명 형식입니다',
-      difficulty: '심화',
-      category: 'linux'
-    },
-    {
-      title: '[Linux] 파일 찾기',
-      description: '디렉토리 안에서 이름으로 파일을 찾습니다.',
-      mission: '현재 디렉토리에서 특정 이름의 파일을 찾으세요',
-      answer_regex: '^find \\. -name ".+"$',
-      hint: 'find . -name "파일명" 형식입니다',
-      difficulty: '심화',
-      category: 'linux'
-    },
-    {
-      title: '[Linux] 권한 변경',
-      description: '파일의 읽기/쓰기/실행 권한을 변경합니다.',
-      mission: '파일의 권한을 755로 변경하세요',
-      answer_regex: '^chmod 755 .+$',
-      hint: 'chmod 다음에 권한 숫자와 파일명',
-      difficulty: '심화',
-      category: 'linux'
-    },
-
-    // ── GDB 기초 ──────────────────────────
-    {
-      title: 'GDB 실행',
-      description: 'GDB 디버거로 프로그램을 실행합니다.',
-      mission: 'program 파일을 GDB로 실행하세요',
-      answer: 'gdb program',
-      hint: 'gdb 뒤에 실행할 프로그램 이름을 입력하세요',
-      difficulty: '기초',
-      category: 'gdb'
-    },
-    {
-      title: '브레이크포인트 설정',
-      description: 'main 함수에 브레이크포인트를 설정합니다.',
-      mission: 'main 함수에 브레이크포인트를 설정하세요',
-      answer: 'break main',
-      hint: 'break 뒤에 함수 이름이나 줄 번호를 입력하세요',
-      difficulty: '기초',
-      category: 'gdb'
-    },
-    {
-      title: '프로그램 실행',
-      description: 'GDB에서 프로그램을 실행합니다.',
-      mission: 'GDB에서 프로그램을 실행하세요',
-      answer: 'run',
-      hint: 'run 명령어로 프로그램을 실행할 수 있습니다',
-      difficulty: '기초',
-      category: 'gdb'
-    },
     // ── GDB 기초 ──────────────────────────
     {
       title: 'GDB 실행',
