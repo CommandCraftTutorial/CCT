@@ -50,7 +50,7 @@ router.post('/:id/submit', async (req, res) => {
     if (!stage) return res.status(404).json({ error: 'Stage not found' })
 
     const passed = gradeCommand(command, stage)
-    const output = applyCommand(userId, command)
+    const output = applyCommand(userId, command, stage.category)  // category 추가
 
     res.json({
       passed,
