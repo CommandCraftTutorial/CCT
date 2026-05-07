@@ -31,4 +31,17 @@ router.patch('/:id/progress', async (req, res) => {
   }
 })
 
+// 리더보드 조회
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const users = await db('users')
+      .select('id', 'username', 'current_stage', 'score')
+      .orderBy('score', 'desc')
+      .limit(100)
+    res.json(users)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
 module.exports = router

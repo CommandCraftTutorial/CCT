@@ -61,7 +61,24 @@ export default function CategoryPage() {
         <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1' }}>
           🖥️ CommandCraftTutorial
         </span>
-        <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          <button
+            onClick={() => navigate('/leaderboard')}
+            style={{
+              padding: '6px 14px',
+              borderRadius: '6px',
+              border: '1px solid #f9e2af',
+              background: 'transparent',
+              color: '#f9e2af',
+              fontSize: '12px',
+              cursor: 'pointer',
+              fontFamily: 'Menlo, Monaco, monospace',
+            }}
+          >
+            🏆 랭킹
+          </button>
+          <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
+        </div>
       </div>
 
       {/* 메인 */}
