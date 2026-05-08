@@ -28,7 +28,7 @@ export default function LoginPage() {
 
       <main className="login-content">
         <h1 className="login-brand">
-          <span className="login-prompt">&gt;_</span> CommandCraft
+          <span className="login-prompt">&gt;_</span> CommandCraftTutorial
         </h1>
 
         <p className="login-subtitle">Git Command Adventure</p>
