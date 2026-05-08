@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
 import { getStage, submitCommand, updateProgress } from '../services/api'
-import { useLocation } from 'react-router-dom'
 import './GamePage.css'
 
 export default function GamePage() {
@@ -13,91 +12,86 @@ export default function GamePage() {
   const [wrongCount, setWrongCount] = useState(0)
   const [overlay, setOverlay] = useState(null)
 
-  const navigate = useNavigate()
-  const user = JSON.parse(localStorage.getItem('user') || '{}')
-
-  // gameConfig 불러오기
-  const gameConfig = JSON.parse(localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}')
-  // stageIds 상태 추가
   const [stageIds, setStageIds] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
 
+  const navigate = useNavigate()
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+  const gameConfig = JSON.parse(
+    localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}'
+  )
+
   useEffect(() => {
-  if (!user.id) { navigate('/'); return; }
-
-  // 1. 처음 진입 시 목록 가져오기
-  const fetchStages = async () => {
-    const res = await fetch(`http://localhost:3000/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`);
-    const data = await res.json();
-    
-    if (data.length > 0) {
-      const ids = data.map(s => s.id);
-      setStageIds(ids);
-      // 현재 인덱스에 맞는 ID 설정
-      setStageId(ids[currentIndex]);
+    if (!user.id) {
+      navigate('/')
+      return
     }
-  };
 
-  fetchStages();
-}, [gameConfig.category, gameConfig.difficulty]); // 카테고리/난이도 바뀔 때만 초기화
+    const fetchStages = async () => {
+      const res = await fetch(
+        `http://localhost:3000/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`
+      )
+      const data = await res.json()
 
-// stageId가 바뀔 때마다 상세 정보 로드
-useEffect(() => {
-  if (stageId) {
+      if (data.length > 0) {
+        const ids = data.map(stage => stage.id)
+        setStageIds(ids)
+        setStageId(ids[currentIndex])
+      }
+    }
+
+    fetchStages()
+  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id])
+
+  useEffect(() => {
+    if (!stageId) return
+
     getStage(stageId).then(res => {
-      setStage(res.data);
-      setShowHint(false);
-      setWrongCount(0);
-    });
-  }
-}, [stageId]);
-
+      setStage(res.data)
+      setShowHint(false)
+      setWrongCount(0)
+    })
+  }, [stageId])
 
   const handleCommand = async (command, term) => {
     try {
       const { data } = await submitCommand(stageId, command, user.id)
-      //term.writeln(data.output)
 
       if (data.passed) {
         const newScore = score + 100
+        const isLastStage = currentIndex === stageIds.length - 1
+
         setScore(newScore)
         term.writeln(`🏆 +100점 획득! 현재 점수: ${newScore}점`)
-        
-        // 현재 스테이지가 전체 목록의 마지막인지 확인
-        const isLastStage = currentIndex === stageIds.length - 1
-        // 점수 업데이트
         updateProgress(user.id, data.nextStageId, newScore)
-
-        //const nextIndex = currentIndex + 1
-        //await updateProgress(user.id, data.nextStageId, newScore)
 
         setOverlay('success')
         setTimeout(() => setOverlay(null), 600)
 
         if (!isLastStage) {
           term.writeln('🎉 성공! 다음 스테이지로 이동합니다...')
+
           setTimeout(() => {
             const nextIndex = currentIndex + 1
             setCurrentIndex(nextIndex)
             setStageId(stageIds[nextIndex])
-            //getStage(stageIds[nextIndex]).then(res => setStage(res.data))
-            //setShowHint(false)
-            //setWrongCount(0)
           }, 1500)
         } else {
-            term.writeln('🏆 모든 스테이지를 완료했습니다!')
-            setTimeout(() => {
-              navigate('/clear', {
-                state: {
-                  total: stageIds.length,
-                  finalScore: newScore
-                }
-              })
-            },2000)
-          }
+          term.writeln('🏆 모든 스테이지를 완료했습니다!')
+
+          setTimeout(() => {
+            navigate('/clear', {
+              state: {
+                total: stageIds.length,
+                finalScore: newScore,
+              },
+            })
+          }, 2000)
+        }
       } else {
         term.writeln('❌ 틀렸습니다. 힌트 버튼을 눌러보세요!')
         setWrongCount(prev => prev + 1)
+
         setOverlay('fail')
         setTimeout(() => setOverlay(null), 600)
       }
@@ -106,17 +100,17 @@ useEffect(() => {
     }
   }
 
+  const progressRate = ((currentIndex + 1) / (stageIds.length || 1)) * 100
+
   return (
     <div className="game-page">
-      {overlay && (
-        <div className={`game-overlay ${overlay}`} />
-      )}
+      {overlay && <div className={`game-overlay ${overlay}`} />}
 
       {showHint && (
         <div className="hint-backdrop" onClick={() => setShowHint(false)}>
           <div className="hint-modal" onClick={(e) => e.stopPropagation()}>
             <div className="hint-header">
-              <span className="hint-title">💡 힌트</span>
+              <span className="hint-title">💡 HINT</span>
               <button className="hint-close-button" onClick={() => setShowHint(false)}>
                 ✕
               </button>
@@ -124,82 +118,108 @@ useEffect(() => {
 
             <div className="hint-divider" />
 
-            <p className="hint-content">
-              {stage?.hint}
-            </p>
+            <p className="hint-content">{stage?.hint}</p>
 
             <button className="hint-confirm-button" onClick={() => setShowHint(false)}>
-              닫기
+              확인
             </button>
           </div>
         </div>
       )}
 
       <header className="game-header">
-        <span className="game-logo">🖥️ CommandCraftTutorial</span>
+        <div className="game-logo">
+          <span className="prompt-mark">&gt;_</span>
+          CommandCraft
+        </div>
 
         <div className="game-header-right">
-          <button className="btn-exit"
-            onClick={() => navigate('/category')}
-          >
-            ✕ 나가기
-          </button>
-          <button className="stage-list-button" onClick={() => navigate('/stages')}>
-            📋 목록
-          </button>
-          <span className="user-name">👤 {user.username}</span>
-          <span className="score">🏆 {score}점</span>
-        </div>
-      </header>
-
-      <section className="mission-panel">
-        <div className="stage-info">
-          <div className="stage-label">STAGE</div>
-          <div className="stage-number">{String(currentIndex + 1).padStart(2, '0')}</div>
-        </div>
-
-        <div className="vertical-divider" />
-
-        <div className="mission-content">
-          <div className="mission-title-row">
-            <h2 className="mission-title">{stage?.title}</h2>
-            <span className={`difficulty-badge ${stage?.difficulty === '기초' ? 'basic' : 'normal'}`}>
-              {stage?.difficulty}
+          <div className="hud-item">
+            <span className="hud-label">STAGE</span>
+            <span className="hud-value">
+              {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length || 0}
             </span>
           </div>
 
-          <p className="mission-description">
-            {stage?.description}
-          </p>
-
-          <div className="mission-box">
-            <span className="mission-label">🎯 미션</span>
-            <span className="mission-text">{stage?.mission}</span>
+          <div className="hud-item">
+            <span className="hud-label">SCORE</span>
+            <span className="hud-value gold">🏆 {score} XP</span>
           </div>
-        </div>
 
-        <div className="hint-button-area">
-          <button className="hint-button" onClick={() => setShowHint(true)}>
-            💡 힌트 보기
+          <div className="hud-user">👤 {user.username}</div>
+
+          <button className="icon-button" onClick={() => navigate('/stages')}>
+            📋
+          </button>
+
+          <button className="icon-button" onClick={() => navigate('/category')}>
+            ✕
           </button>
         </div>
+      </header>
 
-        <div className="progress-area">
-          <div className="progress-label">진행률</div>
+      <main className="game-main">
+        <section className="mission-grid">
+          <div className="mission-card">
+            <div className="section-label">› MISSION</div>
+
+            <h1 className="mission-title">{stage?.title}</h1>
+
+            <p className="mission-description">
+              {stage?.description}
+            </p>
+
+            <div className="mission-command">
+              <span className="mission-command-label">🎯 미션</span>
+              <code>{stage?.mission}</code>
+            </div>
+          </div>
+
+          <aside className="mission-side-card">
+            <div className="side-row">
+              <span className="side-label">난이도</span>
+              <span className={`difficulty-pill ${stage?.difficulty === '기초' ? 'basic' : 'normal'}`}>
+                {stage?.difficulty}
+              </span>
+            </div>
+
+            <button className="hint-button" onClick={() => setShowHint(true)}>
+              💡 힌트 보기
+            </button>
+
+            <div className="side-row vertical">
+              <span className="side-label">오답 횟수</span>
+              <span className="wrong-count">{wrongCount} / 3</span>
+            </div>
+          </aside>
+        </section>
+
+        <section className="progress-card">
+          <span className="progress-title">진행률</span>
+
           <div className="progress-bar">
             <div
               className="progress-fill"
-              style={{ width: `${((currentIndex + 1) / (stageIds.length || 1)) * 100}%`}}
+              style={{ width: `${progressRate}%` }}
             />
           </div>
-          <div className="progress-text">
-            {currentIndex + 1} / {stageIds.length}
-          </div>
-        </div>
-      </section>
 
-      <main className="terminal-area">
-        <Terminal onCommand={handleCommand} />
+          <span className="progress-percent">
+            {Math.round(progressRate)}% ({currentIndex + 1} / {stageIds.length || 1})
+          </span>
+        </section>
+
+        <section className="terminal-panel">
+          <div className="terminal-panel-header">
+            <span className="terminal-dot" />
+            <span className="terminal-title">TERMINAL</span>
+            <button className="terminal-clear-button">CLEAR</button>
+          </div>
+
+          <div className="terminal-wrapper">
+            <Terminal onCommand={handleCommand} />
+          </div>
+        </section>
       </main>
     </div>
   )
