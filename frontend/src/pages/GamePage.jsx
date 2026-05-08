@@ -130,7 +130,7 @@ export default function GamePage() {
       <header className="game-header">
         <div className="game-logo">
           <span className="prompt-mark">&gt;_</span>
-          CommandCraft
+          CommandCraftTutorial
         </div>
 
         <div className="game-header-right">
