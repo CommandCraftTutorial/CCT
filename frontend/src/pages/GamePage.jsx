@@ -127,32 +127,35 @@ export default function GamePage() {
         </div>
       )}
 
-      <header className="game-header">
-        <div className="game-logo">
-          <span className="prompt-mark">&gt;_</span>
-          CommandCraftTutorial
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
         </div>
 
-        <div className="game-header-right">
-          <div className="hud-item">
-            <span className="hud-label">STAGE</span>
-            <span className="hud-value">
+        <div className="cct-header-right">
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">STAGE</span>
+            <span className="cct-hud-value">
               {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length || 0}
             </span>
           </div>
 
-          <div className="hud-item">
-            <span className="hud-label">SCORE</span>
-            <span className="hud-value gold">🏆 {score} XP</span>
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">SCORE</span>
+            <span className="cct-hud-value gold">🏆 {score} XP</span>
           </div>
 
-          <div className="hud-user">👤 {user.username}</div>
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
+          </div>
 
-          <button className="icon-button" onClick={() => navigate('/stages')}>
+          <button className="cct-icon-button" onClick={() => navigate('/stages')}>
             📋
           </button>
 
-          <button className="icon-button" onClick={() => navigate('/category')}>
+          <button className="cct-icon-button" onClick={() => navigate('/category')}>
             ✕
           </button>
         </div>

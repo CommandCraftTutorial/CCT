@@ -31,7 +31,7 @@ export default function LoginPage() {
           <span className="login-prompt">&gt;_</span> CommandCraftTutorial
         </h1>
 
-        <p className="login-subtitle">Git Command Adventure</p>
+        <p className="login-subtitle">Command Training Adventure</p>
         <p className="login-message">터미널 훈련에 접속하세요.</p>
 
         <section className="login-card">
@@ -68,7 +68,7 @@ export default function LoginPage() {
         </section>
 
         <p className="login-footer-text">
-          💡 Git 명령어를 게임처럼 배우고, 미션을 클리어하세요!
+          💡 Git, Linux, GDB, PDB 명령어를 게임처럼 배우고 미션을 클리어하세요!
         </p>
       </main>
     </div>
