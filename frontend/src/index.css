@@ -42,3 +42,159 @@ body {
 .flash-fail {
   animation: flashFail 0.6s ease, shake 0.4s ease;
 }
+
+/* =========================
+   CCT Common Header Final Override
+========================= */
+
+:root {
+  --cct-header-height: 72px;
+  --cct-header-padding-x: 32px;
+  --cct-header-pill-height: 36px;
+}
+
+.cct-header {
+  position: relative !important;
+  z-index: 2 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+
+  width: 100% !important;
+  min-height: var(--cct-header-height) !important;
+  padding: 0 var(--cct-header-padding-x) !important;
+  box-sizing: border-box !important;
+
+  background: rgba(13, 15, 24, 0.92) !important;
+  border-bottom: 1px solid rgba(205, 214, 244, 0.12) !important;
+  box-shadow: 0 0 24px rgba(0, 0, 0, 0.35) !important;
+  backdrop-filter: blur(12px);
+}
+
+.cct-brand {
+  display: flex !important;
+  align-items: center !important;
+  gap: 10px !important;
+  height: var(--cct-header-pill-height);
+}
+
+.cct-prompt {
+  color: #a6e3a1;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  text-shadow: 0 0 14px rgba(166, 227, 161, 0.55);
+}
+
+.cct-logo {
+  color: #a6e3a1;
+  font-size: 20px;
+  font-weight: bold;
+  line-height: 1;
+  letter-spacing: 0.5px;
+  text-shadow: 0 0 12px rgba(166, 227, 161, 0.38);
+}
+
+.cct-header-right {
+  display: flex !important;
+  align-items: center !important;
+  gap: 14px !important;
+}
+
+.cct-pill {
+  height: var(--cct-header-pill-height);
+  padding: 0 16px;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+
+  border-radius: 999px;
+  background: rgba(24, 24, 37, 0.95);
+  border: 1px solid rgba(205, 214, 244, 0.12);
+
+  color: #cdd6f4;
+  font-size: 12px;
+  font-family: Menlo, Monaco, Consolas, monospace;
+}
+
+.cct-icon-button {
+  width: var(--cct-header-pill-height);
+  height: var(--cct-header-pill-height);
+  padding: 0;
+  box-sizing: border-box;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 10px;
+  background: rgba(24, 24, 37, 0.95);
+  border: 1px solid rgba(205, 214, 244, 0.12);
+  color: #a6adc8;
+
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 900;
+  font-family: Menlo, Monaco, Consolas, monospace;
+
+  transition:
+    transform 0.16s ease,
+    border-color 0.16s ease,
+    color 0.16s ease,
+    box-shadow 0.16s ease,
+    background 0.16s ease;
+}
+
+.cct-icon-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(166, 227, 161, 0.8);
+  color: #a6e3a1;
+  background: rgba(166, 227, 161, 0.08);
+  box-shadow: 0 0 18px rgba(166, 227, 161, 0.2);
+}
+
+.cct-hud-pill {
+  min-width: 82px;
+  height: var(--cct-header-pill-height);
+  padding: 0 14px;
+  box-sizing: border-box;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 999px;
+  background: rgba(24, 24, 37, 0.95);
+  border: 1px solid rgba(205, 214, 244, 0.12);
+}
+
+.cct-hud-label {
+  color: #6c7086;
+  font-size: 9px;
+  line-height: 1;
+  letter-spacing: 1.2px;
+}
+
+.cct-hud-value {
+  margin-top: 4px;
+  color: #cdd6f4;
+  font-size: 12px;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.cct-hud-value.gold {
+  color: #f9e2af;
+  text-shadow: 0 0 10px rgba(249, 226, 175, 0.25);
+}
+
+.cct-back-button {
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}

@@ -1,4 +1,5 @@
 import { useNavigate } from 'react-router-dom'
+import './CategoryPage.css'
 
 export default function CategoryPage() {
   const navigate = useNavigate()
@@ -9,171 +10,131 @@ export default function CategoryPage() {
       id: 'git',
       title: 'Git',
       icon: '🌿',
+      command: 'git init',
       description: 'Git 버전 관리 명령어를 배워보세요',
       color: 'A6E3A1',
       stages: '기초 10개 · 중급 10개 · 심화 10개',
+      difficulty: 'BEGINNER',
     },
     {
       id: 'linux',
       title: 'Linux',
       icon: '🐧',
+      command: 'ls -al',
       description: 'Linux 터미널 명령어를 배워보세요',
       color: '89B4FA',
       stages: '기초 5개 · 중급 5개 · 심화 5개',
+      difficulty: 'BASIC',
     },
     {
       id: 'gdb',
       title: 'GDB',
       icon: '🔍',
+      command: 'gdb ./main',
       description: 'GNU 디버거 사용법을 배워보세요',
       color: 'F38BA8',
       stages: '기초 5개 · 중급 5개 · 심화 3개',
+      difficulty: 'DEBUG',
     },
     {
       id: 'pdb',
       title: 'PDB',
       icon: '🐍',
+      command: 'python -m pdb',
       description: 'Python 디버거 사용법을 배워보세요',
       color: 'F9E2AF',
       stages: '기초 5개 · 중급 5개 · 심화 3개',
+      difficulty: 'PYTHON',
     },
   ]
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      background: '#0f0f17',
-      color: '#cdd6f4',
-      fontFamily: 'Menlo, Monaco, monospace',
-    }}>
-
-      {/* 헤더 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 24px',
-        background: '#13131f',
-        borderBottom: '1px solid #2a2a3d',
-      }}>
-        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1' }}>
-          🖥️ CommandCraftTutorial
-        </span>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <button
-            onClick={() => navigate('/leaderboard')}
-            style={{
-              padding: '6px 14px',
-              borderRadius: '6px',
-              border: '1px solid #f9e2af',
-              background: 'transparent',
-              color: '#f9e2af',
-              fontSize: '12px',
-              cursor: 'pointer',
-              fontFamily: 'Menlo, Monaco, monospace',
-            }}
-          >
-            🏆 랭킹
-          </button>
-          <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
+    <div className="category-page">
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
         </div>
-      </div>
 
-      {/* 메인 */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '40px 24px',
-        gap: '16px',
-      }}>
-        <h1 style={{ fontSize: '24px', color: '#a6e3a1', margin: '0 0 8px' }}>
-          🎮 명령어 선택
-        </h1>
-        <p style={{ color: '#6c7086', fontSize: '13px', marginBottom: '24px' }}>
-          학습할 명령어를 선택하세요
-        </p>
+        <div className="cct-header-right">
+          <button
+            className="cct-pill category-ranking-button"
+            onClick={() => navigate('/leaderboard')}
+          >
+            🏆 Ranking
+          </button>
 
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(2, 1fr)',
-          gap: '20px',
-          maxWidth: '700px',
-          width: '100%',
-        }}>
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
+          </div>
+        </div>
+      </header>
+
+      <main className="category-main">
+        <section className="category-hero">
+          <p className="category-kicker">COMMAND TRAINING HUB</p>
+          <h1 className="category-title">
+            Select Your Command Field
+          </h1>
+          <p className="category-subtitle">
+            학습할 명령어 분야를 선택하고 미션을 시작하세요.
+          </p>
+        </section>
+
+        <section className="category-grid">
           {categories.map((cat) => (
-            <div
+            <article
               key={cat.id}
+              className="category-card"
               onClick={() => navigate(`/difficulty/${cat.id}`)}
               style={{
-                background: '#13131f',
-                border: `1px solid #${cat.color}`,
-                borderRadius: '12px',
-                padding: '28px 24px',
-                cursor: 'pointer',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '12px',
-                transition: 'transform 0.15s ease, box-shadow 0.15s ease',
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.transform = 'translateY(-4px)'
-                e.currentTarget.style.boxShadow = `0 8px 24px rgba(0,0,0,0.4)`
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.transform = 'translateY(0)'
-                e.currentTarget.style.boxShadow = 'none'
+                '--category-color': `#${cat.color}`,
               }}
             >
-              <div style={{ fontSize: '48px' }}>{cat.icon}</div>
-              <h2 style={{
-                fontSize: '20px',
-                fontWeight: 'bold',
-                color: `#${cat.color}`,
-                margin: 0,
-              }}>
-                {cat.title}
-              </h2>
-              <p style={{
-                fontSize: '12px',
-                color: '#a6adc8',
-                textAlign: 'center',
-                lineHeight: '1.6',
-                margin: 0,
-              }}>
-                {cat.description}
-              </p>
-              <div style={{
-                fontSize: '11px',
-                color: '#6c7086',
-                textAlign: 'center',
-              }}>
-                {cat.stages}
+              <div className="category-card-header">
+                <div className="category-card-command">
+                  <span className="category-status-dot"></span>
+                  <span>$ {cat.command}</span>
+                </div>
+
+                <span className="category-difficulty">
+                  {cat.difficulty}
+                </span>
               </div>
-              <button style={{
-                marginTop: '4px',
-                padding: '8px 24px',
-                borderRadius: '8px',
-                border: `1px solid #${cat.color}`,
-                background: 'transparent',
-                color: `#${cat.color}`,
-                fontSize: '12px',
-                cursor: 'pointer',
-                fontFamily: 'Menlo, Monaco, monospace',
-                fontWeight: 'bold',
-                width: '100%',
-              }}>
-                시작하기 →
+
+              <div className="category-card-body">
+                <div className="category-icon">
+                  {cat.icon}
+                </div>
+
+                <div className="category-card-text">
+                  <h2 className="category-card-title">
+                    {cat.title}
+                  </h2>
+
+                  <p className="category-description">
+                    {cat.description}
+                  </p>
+                </div>
+              </div>
+
+              <div className="category-stage-info">
+                <span>📋 Stage Log</span>
+                <strong>{cat.stages}</strong>
+              </div>
+
+              <button className="category-start-button">
+                🎮 미션 선택하기
               </button>
-            </div>
+            </article>
           ))}
-        </div>
-      </div>
+        </section>
+      </main>
+
+      <footer className="category-footer">
+        💡 카테고리를 선택하면 난이도 선택 화면으로 이동합니다.
+      </footer>
     </div>
   )
 }

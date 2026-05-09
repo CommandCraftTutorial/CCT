@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getLeaderboard } from '../services/api'
+import './LeaderboardPage.css'
 
 export default function LeaderboardPage() {
   const [rankings, setRankings] = useState([])
@@ -31,154 +32,123 @@ export default function LeaderboardPage() {
     return '6C7086'
   }
 
+  const myRankIndex = rankings.findIndex(r => r.username === user.username)
+  const myRanking = rankings.find(r => r.username === user.username)
+
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      minHeight: '100vh',
-      background: '#0f0f17',
-      color: '#cdd6f4',
-      fontFamily: 'Menlo, Monaco, monospace',
-    }}>
-
-      {/* 헤더 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 24px',
-        background: '#13131f',
-        borderBottom: '1px solid #2a2a3d',
-      }}>
-        <span
+    <div className="leaderboard-page">
+      <header className="leaderboard-header">
+        <button
+          className="leaderboard-back-brand"
           onClick={() => navigate('/category')}
-          style={{ fontSize: '16px', fontWeight: 'bold', color: '#a6e3a1', cursor: 'pointer' }}
         >
-          ← 🖥️ CommandCraft Tutorial
-        </span>
-        <span style={{ color: '#a6adc8', fontSize: '13px' }}>👤 {user.username}</span>
-      </div>
+          <span className="leaderboard-back-arrow">←</span>
+          <span className="leaderboard-prompt">&gt;_</span>
+          <span className="leaderboard-logo">CommandCraftTutorial</span>
+        </button>
 
-      {/* 메인 */}
-      <div style={{
-        flex: 1,
-        display: 'flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        padding: '40px 24px',
-        gap: '24px',
-        overflowY: 'auto', 
-        height: 'calc(100vh - 53px)',
-      }}>
-        <h1 style={{ fontSize: '24px', color: '#f9e2af', margin: 0 }}>
-          🏆 랭킹 대시보드
-        </h1>
-        <p style={{ color: '#6c7086', fontSize: '13px', margin: 0 }}>
-          상위 10명의 플레이어
-        </p>
+        <div className="leaderboard-user-box">
+          <span className="leaderboard-user-icon">👤</span>
+          <span>{user.username || 'player01'}</span>
+        </div>
+      </header>
+
+      <main className="leaderboard-main">
+        <section className="leaderboard-hero">
+          <p className="leaderboard-kicker">PLAYER RANKING</p>
+
+          <h1 className="leaderboard-title">
+            🏆 Ranking Dashboard
+          </h1>
+
+          <p className="leaderboard-command">
+            $ leaderboard --top 10
+          </p>
+
+          <p className="leaderboard-subtitle">
+            상위 10명의 플레이어와 내 현재 순위를 확인하세요.
+          </p>
+        </section>
 
         {loading ? (
-          <p style={{ color: '#6c7086' }}>로딩 중...</p>
+          <section className="leaderboard-panel leaderboard-loading">
+            <span className="leaderboard-loading-cursor">$</span>
+            <span>랭킹 데이터를 불러오는 중...</span>
+          </section>
         ) : (
-          <div style={{
-            width: '100%',
-            maxWidth: '600px',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '10px',
-          }}>
-            {/* 내 순위 */}
-            {rankings.findIndex(r => r.username === user.username) !== -1 && (
-              <div style={{
-                padding: '12px 20px',
-                background: '#1a2a1a',
-                border: '1px solid #a6e3a1',
-                borderRadius: '8px',
-                fontSize: '13px',
-                color: '#a6e3a1',
-                textAlign: 'center',
-              }}>
-                내 순위: {rankings.findIndex(r => r.username === user.username) + 1}위
-                &nbsp;·&nbsp;
-                {rankings.find(r => r.username === user.username)?.score}점
+          <section className="leaderboard-panel">
+            <div className="leaderboard-panel-header">
+              <div>
+                <p className="leaderboard-panel-kicker">SCORE BOARD</p>
+                <h2 className="leaderboard-panel-title">Top Players</h2>
+              </div>
+
+              <span className="leaderboard-panel-badge">
+                TOP 10
+              </span>
+            </div>
+
+            {myRankIndex !== -1 && (
+              <div className="leaderboard-my-rank">
+                <span className="leaderboard-my-rank-label">
+                  내 순위
+                </span>
+
+                <strong>
+                  {myRankIndex + 1}위 · {myRanking?.score}점
+                </strong>
               </div>
             )}
 
-            {/* 랭킹 목록 */}
-            {rankings.map((player, index) => (
-              <div
-                key={player.id}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '16px',
-                  padding: '16px 20px',
-                  background: player.username === user.username ? '#1a2a1a' : '#13131f',
-                  border: `1px solid ${player.username === user.username ? '#a6e3a1' : '#2a2a3d'}`,
-                  borderRadius: '10px',
-                }}
-              >
-                {/* 순위 */}
-                <div style={{
-                  width: '40px',
-                  height: '40px',
-                  borderRadius: '8px',
-                  background: '#0f0f17',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: index < 3 ? '20px' : '14px',
-                  fontWeight: 'bold',
-                  color: `#${getRankColor(index)}`,
-                  flexShrink: 0,
-                }}>
-                  {getRankIcon(index)}
-                </div>
+            <div className="leaderboard-list">
+              {rankings.map((player, index) => {
+                const isMe = player.username === user.username
 
-                {/* 유저 정보 */}
-                <div style={{ flex: 1 }}>
-                  <div style={{
-                    fontSize: '14px',
-                    fontWeight: 'bold',
-                    color: player.username === user.username ? '#a6e3a1' : '#cdd6f4',
-                    marginBottom: '4px',
-                  }}>
-                    {player.username}
-                    {player.username === user.username && (
-                      <span style={{ fontSize: '11px', color: '#a6e3a1', marginLeft: '8px' }}>
-                        (나)
-                      </span>
-                    )}
-                  </div>
-                  <div style={{ fontSize: '11px', color: '#6c7086' }}>
-                    스테이지 {player.current_stage} 진행중
-                  </div>
-                </div>
+                return (
+                  <article
+                    key={player.id}
+                    className={`leaderboard-row ${isMe ? 'is-me' : ''}`}
+                    style={{
+                      '--rank-color': `#${getRankColor(index)}`,
+                    }}
+                  >
+                    <div className="leaderboard-rank">
+                      {getRankIcon(index)}
+                    </div>
 
-                {/* 점수 */}
-                <div style={{
-                  fontSize: '18px',
-                  fontWeight: 'bold',
-                  color: `#${getRankColor(index)}`,
-                }}>
-                  {player.score}점
-                </div>
-              </div>
-            ))}
+                    <div className="leaderboard-player-info">
+                      <div className="leaderboard-player-name">
+                        {player.username}
 
-            {rankings.length === 0 && (
-              <div style={{
-                textAlign: 'center',
-                color: '#6c7086',
-                padding: '40px',
-                fontSize: '13px',
-              }}>
-                아직 랭킹 데이터가 없어요
-              </div>
-            )}
-          </div>
+                        {isMe && (
+                          <span className="leaderboard-me-badge">
+                            ME
+                          </span>
+                        )}
+                      </div>
+
+                      <div className="leaderboard-player-stage">
+                        스테이지 {player.current_stage} 진행중
+                      </div>
+                    </div>
+
+                    <div className="leaderboard-score">
+                      {player.score}
+                      <span> XP</span>
+                    </div>
+                  </article>
+                )
+              })}
+
+              {rankings.length === 0 && (
+                <div className="leaderboard-empty">
+                  아직 랭킹 데이터가 없어요
+                </div>
+              )}
+            </div>
+          </section>
         )}
-      </div>
+      </main>
     </div>
   )
 }
