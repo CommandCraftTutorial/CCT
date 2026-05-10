@@ -1,7 +1,7 @@
 exports.seed = async function(knex) {
   await knex('stages').del()
   await knex('stages').insert([
-
+ 
     // ── Git 기초 ──────────────────────────
     {
       title: '저장소 초기화',
@@ -36,15 +36,6 @@ exports.seed = async function(knex) {
       mission: '모든 파일을 스테이징 영역에 추가하세요',
       answer: 'git add .',
       hint: '. 은 현재 폴더의 모든 파일을 의미합니다',
-      difficulty: '기초',
-      category: 'git'
-    },
-    {
-      title: '특정 파일 스테이징',
-      description: '특정 파일만 스테이징 영역에 추가하는 명령어.',
-      mission: '특정 파일 하나를 스테이징 영역에 추가하세요 (git add 파일명)',
-      answer_regex: '^git add (?!\\.$).+$',
-      hint: 'add 뒤에 파일 이름을 입력하세요',
       difficulty: '기초',
       category: 'git'
     },
@@ -102,7 +93,7 @@ exports.seed = async function(knex) {
       difficulty: '기초',
       category: 'git'
     },
-
+ 
     // ── Git 중급 ──────────────────────────
     {
       title: '브랜치 목록 보기',
@@ -194,7 +185,7 @@ exports.seed = async function(knex) {
       difficulty: '중급',
       category: 'git'
     },
-
+ 
     // ── Git 심화 ──────────────────────────
     {
       title: '원격 저장소 등록',
@@ -286,36 +277,7 @@ exports.seed = async function(knex) {
       difficulty: '심화',
       category: 'git'
     },
-    {
-      title: '직전 커밋 되돌리기',
-      description: '직전 커밋을 취소하되 변경 사항은 워킹 디렉토리에 남깁니다.',
-      mission: '직전 커밋을 soft 모드로 되돌리세요 (HEAD~1)',
-      answer: 'git reset --soft HEAD~1',
-      hint: 'reset 의 --soft 옵션과 HEAD~1 을 함께 사용합니다',
-      difficulty: '심화',
-      category: 'git'
-    },
-    {
-      title: '리베이스',
-      description: '커밋 히스토리를 깔끔하게 정리하기 위한 명령어.',
-      mission: '특정 브랜치 위로 rebase 하세요',
-      answer_regex: '^git rebase .+$',
-      hint: '"기반을 다시 잡다"라는 의미의 명령어입니다',
-      difficulty: '심화',
-      category: 'git'
-    },
-    {
-      title: '태그 만들기',
-      description: '특정 커밋에 버전 태그를 붙이는 명령어.',
-      mission: '새로운 태그를 생성하세요 (git tag 태그명)',
-      answer_regex: '^git tag (?!-).+$',
-      hint: 'tag 뒤에 v1.0 같은 태그 이름을 입력하세요',
-      difficulty: '심화',
-      category: 'git'
-    },
-  
-
-
+ 
     // ── Linux 기초 ──────────────────────────
     {
       title: '현재 위치 확인',
@@ -362,7 +324,7 @@ exports.seed = async function(knex) {
       difficulty: '기초',
       category: 'linux'
     },
-
+ 
     // ── Linux 중급 ──────────────────────────
     {
       title: '폴더 만들기',
@@ -409,7 +371,7 @@ exports.seed = async function(knex) {
       difficulty: '중급',
       category: 'linux'
     },
-
+ 
     // ── Linux 심화 ──────────────────────────
     {
       title: '파일 내용 검색',
@@ -456,6 +418,7 @@ exports.seed = async function(knex) {
       difficulty: '심화',
       category: 'linux'
     },
+ 
     // ── GDB 기초 ──────────────────────────
     {
       title: 'GDB 실행',
@@ -502,11 +465,11 @@ exports.seed = async function(knex) {
       difficulty: '기초',
       category: 'gdb'
     },
-
-    //── GDB 중급 ──────────────────────────
+ 
+    // ── GDB 중급 ──────────────────────────
     {
-      title: '[GDB] 중단점 설정',
-      description: '특정 줄 또는 함수에서 실행을 멈추도록 설정합니다.',
+      title: '줄 번호로 중단점 설정',
+      description: '특정 줄 번호에서 실행을 멈추도록 설정합니다.',
       mission: '특정 줄 번호에 중단점을 설정하세요',
       answer_regex: '^break \\d+$',
       hint: 'break 뒤에 줄 번호를 입력합니다',
@@ -514,25 +477,25 @@ exports.seed = async function(knex) {
       category: 'gdb'
     },
     {
-      title: '[GDB] 다음 줄 실행',
+      title: '다음 줄 실행',
       description: '함수 호출은 건너뛰고 다음 줄로 이동합니다.',
       mission: '함수 안에 들어가지 않고 다음 줄을 실행하세요',
       answer: 'next',
-      hint: '"다음"이라는 영어 단어',
+      hint: '"다음"이라는 영어 단어입니다',
       difficulty: '중급',
       category: 'gdb'
     },
     {
-      title: '[GDB] 함수 안으로 들어가기',
+      title: '함수 안으로 들어가기',
       description: '함수 호출 시 그 함수 내부로 들어갑니다.',
       mission: '함수 안으로 한 단계 들어가세요',
       answer: 'step',
-      hint: '"한 걸음"이라는 영어 단어',
+      hint: '"한 걸음"이라는 영어 단어입니다',
       difficulty: '중급',
       category: 'gdb'
     },
     {
-      title: '[GDB] 변수 값 출력',
+      title: '변수 값 출력',
       description: '특정 변수의 현재 값을 출력합니다.',
       mission: '변수의 현재 값을 출력하세요',
       answer_regex: '^print .+$',
@@ -540,7 +503,16 @@ exports.seed = async function(knex) {
       difficulty: '중급',
       category: 'gdb'
     },
-
+    {
+      title: '계속 실행',
+      description: '다음 중단점을 만날 때까지 프로그램을 계속 실행합니다.',
+      mission: '다음 중단점까지 계속 실행하세요',
+      answer: 'continue',
+      hint: '"계속하다"라는 영어 단어입니다',
+      difficulty: '중급',
+      category: 'gdb'
+    },
+ 
     // ── GDB 심화 ──────────────────────────
     {
       title: '콜 스택 보기',
@@ -569,7 +541,7 @@ exports.seed = async function(knex) {
       difficulty: '심화',
       category: 'gdb'
     },
-
+ 
     // ── PDB 기초 ──────────────────────────
     {
       title: '코드 보기',
@@ -616,7 +588,7 @@ exports.seed = async function(knex) {
       difficulty: '기초',
       category: 'pdb'
     },
-
+ 
     // ── PDB 중급 ──────────────────────────
     {
       title: '함수 안으로',
@@ -663,7 +635,7 @@ exports.seed = async function(knex) {
       difficulty: '중급',
       category: 'pdb'
     },
-
+ 
     // ── PDB 심화 ──────────────────────────
     {
       title: '콜 스택 보기',
