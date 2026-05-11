@@ -19,3 +19,12 @@ export const updateProgress = (userId, current_stage, score) =>
 
 export const getLeaderboard = () =>
   api.get('/users/leaderboard')
+
+export const getDungeonStages = () =>
+  api.get('/dungeon')
+
+export const getDungeonStage = (id) =>
+  api.get(`/dungeon/${id}`)
+
+export const sendDungeonCommand = (stageId, command, userId) =>
+  api.post(`/dungeon/${stageId}/command`, { command, userId })

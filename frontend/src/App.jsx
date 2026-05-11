@@ -6,6 +6,7 @@ import DifficultyPage from './pages/DifficultyPage'
 import StageClearPage from './pages/StageClearPage'
 import StageListPage from './pages/StageListPage'
 import LeaderboardPage from './pages/LeaderboardPage'
+import DungeonPage from './pages/DungeonPage'
 
 function App() {
   return (
@@ -17,6 +18,7 @@ function App() {
       <Route path="/clear" element={<StageClearPage />} />
       <Route path="/stages" element={<StageListPage />} />
       <Route path="/leaderboard" element={<LeaderboardPage />} />
+      <Route path="/dungeon" element={<DungeonPage />} />
     </Routes>
   )
 }
