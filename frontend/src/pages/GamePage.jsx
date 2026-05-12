@@ -137,7 +137,7 @@ export default function GamePage() {
           <div className="cct-hud-pill">
             <span className="cct-hud-label">STAGE</span>
             <span className="cct-hud-value">
-              {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length || 0}
+              {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length}
             </span>
           </div>
 
