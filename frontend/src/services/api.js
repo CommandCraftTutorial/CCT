@@ -1,6 +1,8 @@
 import axios from 'axios'
 
-const api = axios.create({ baseURL: 'http://localhost:3000/api' })
+const api = axios.create({ 
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
+})
 
 export const loginUser = (username) =>
   api.post('/users/login', { username })
@@ -17,9 +19,11 @@ export const submitCommand = (stageId, command, userId) =>
 export const updateProgress = (userId, current_stage, score) =>
   api.patch(`/users/${userId}/progress`, { current_stage, score })
 
+//랭킹 대시보드
 export const getLeaderboard = () =>
   api.get('/users/leaderboard')
 
+//미니게임
 export const getDungeonStages = () =>
   api.get('/dungeon')
 
