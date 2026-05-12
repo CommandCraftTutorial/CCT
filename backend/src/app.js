@@ -12,7 +12,7 @@ const dungeonRouter = require('./routes/dungeon')
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    process.env.FRONTEND_URL || '*'
+    'https://cct-teal.vercel.app'
   ]
 }))
 app.use(express.json())
