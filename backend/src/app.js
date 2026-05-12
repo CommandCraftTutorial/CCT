@@ -9,7 +9,12 @@ const app = express()
 
 const dungeonRouter = require('./routes/dungeon')
 
-app.use(cors({ origin: 'http://localhost:5173' }))
+app.use(cors({
+  origin: [
+    'http://localhost:5173',
+    process.env.FRONTEND_URL || '*'
+  ]
+}))
 app.use(express.json())
 
 app.use('/api/stages', stageRouter)
