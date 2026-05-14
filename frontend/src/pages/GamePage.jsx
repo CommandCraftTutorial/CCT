@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
-import { getStage, submitCommand, updateProgress } from '../services/api'
+import { getStage, submitCommand, updateProgress, getStagesByCategory } from '../services/api'
 import './GamePage.css'
+
 
 export default function GamePage() {
   const [stage, setStage] = useState(null)
@@ -29,7 +30,7 @@ export default function GamePage() {
 
     const fetchStages = async () => {
       const res = await fetch(
-        `http://localhost:3000/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`
+        `https://cct-xeeo.onrender.com/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`
       )
       const data = await res.json()
 

@@ -32,3 +32,6 @@ export const getDungeonStage = (id) =>
 
 export const sendDungeonCommand = (stageId, command, userId) =>
   api.post(`/dungeon/${stageId}/command`, { command, userId })
+
+export const getStagesByCategory = (category, difficulty) =>
+  api.get(`/stages/category/${category}?difficulty=${difficulty}`)
