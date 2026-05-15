@@ -1,0 +1,162 @@
+.mode-page {
+  min-height: 100vh;
+  background: #0d0d14;
+  color: #cdd6f4;
+  font-family: 'Menlo', 'Monaco', monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+.mode-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+  gap: 40px;
+}
+
+.mode-hero {
+  text-align: center;
+}
+
+.mode-kicker {
+  font-size: 12px;
+  color: #a6e3a1;
+  letter-spacing: 3px;
+  margin-bottom: 12px;
+}
+
+.mode-title {
+  font-size: 28px;
+  font-weight: bold;
+  color: #cdd6f4;
+  margin-bottom: 12px;
+}
+
+.mode-subtitle {
+  font-size: 14px;
+  color: #6c7086;
+}
+
+.mode-cards {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 900px;
+  width: 100%;
+}
+
+.mode-card {
+  flex: 1;
+  min-width: 300px;
+  max-width: 400px;
+  background: #13131f;
+  border-radius: 16px;
+  padding: 32px 28px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.mode-card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.4);
+}
+
+.mode-card--study {
+  border: 1px solid #a6e3a1;
+}
+
+.mode-card--competition {
+  border: 1px solid #f38ba8;
+}
+
+.mode-card-icon {
+  font-size: 48px;
+  text-align: center;
+}
+
+.mode-card-title {
+  font-size: 22px;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+}
+
+.mode-card--study .mode-card-title {
+  color: #a6e3a1;
+}
+
+.mode-card--competition .mode-card-title {
+  color: #f38ba8;
+}
+
+.mode-card-desc {
+  font-size: 13px;
+  color: #a6adc8;
+  text-align: center;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.mode-card-features {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mode-card-features li {
+  font-size: 12px;
+  color: #cdd6f4;
+}
+
+.mode-card-button {
+  padding: 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  font-family: 'Menlo', 'Monaco', monospace;
+  margin-top: 8px;
+  transition: opacity 0.2s;
+}
+
+.mode-card-button:hover {
+  opacity: 0.85;
+}
+
+.mode-card-button--study {
+  background: #a6e3a1;
+  color: #0d0d14;
+}
+
+.mode-card-button--competition {
+  background: #f38ba8;
+  color: #0d0d14;
+}
+
+/* 미니게임 카드 포인트 컬러 (예시: Catppuccin 테마의 보라색 계열) */
+.mode-card--minigame:hover {
+  border-color: #cba6f7; /* 호버 시 보라색 테두리 */
+  box-shadow: 0 8px 24px rgba(203, 166, 247, 0.15);
+}
+
+.mode-card-button--minigame {
+  background: transparent;
+  border: 1px solid #cba6f7;
+  color: #cba6f7;
+}
+
+.mode-card--minigame:hover .mode-card-button--minigame {
+  background: #cba6f7;
+  color: #0d0d14;
+}

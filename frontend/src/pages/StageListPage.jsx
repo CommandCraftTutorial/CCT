@@ -68,7 +68,7 @@ export default function StageListPage() {
         </section>
 
         <section className="stage-card-list">
-          {stages.map((stage) => {
+          {stages.map((stage, index) => {
             const cleared = isCleared(stage.id)
             const current = isCurrent(stage.id)
             const locked = isLocked(stage.id)
@@ -89,7 +89,7 @@ export default function StageListPage() {
                 }}
               >
                 <div className={`stage-number-box ${cleared || current ? 'active' : ''}`}>
-                  {cleared ? '✓' : String(stage.id).padStart(2, '0')}
+                  {cleared ? '✓' : String(index + 1).padStart(2, '0')}
                 </div>
 
                 <div className="stage-card-content">

@@ -109,17 +109,18 @@ export default function CategoryPage() {
         </div>
 
         <div className="cct-header-right">
-          <button
-            className="cct-pill category-ranking-button"
-            onClick={() => navigate('/leaderboard')}
-          >
-            🏆 Ranking
-          </button>
-
           <div className="cct-pill">
             <span>👤</span>
             <span>{user.username || 'player01'}</span>
           </div>
+
+          <button
+            className="cct-icon-button cct-back-button"
+            onClick={() => navigate('/mode')}
+            aria-label="모드로 돌아가기"
+          >
+            ←
+          </button>
         </div>
       </header>
 
@@ -181,41 +182,6 @@ export default function CategoryPage() {
               </button>
             </article>
           ))}
-        </section>
-
-        {/* 던전 버튼 추가 */}
-        <section
-          onClick={() => navigate('/dungeon')}
-          style={{
-            marginTop: '24px',
-            padding: '24px',
-            background: '#13131f',
-            border: '1px solid #f9e2af',
-            borderRadius: '12px',
-            cursor: 'pointer',
-            textAlign: 'center',
-            width: '100%',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: '20px',
-            transition: 'transform 0.15s ease',
-          }}
-          onMouseEnter={e => e.currentTarget.style.transform = 'translateY(-2px)'}
-          onMouseLeave={e => e.currentTarget.style.transform = 'translateY(0)'}
-        >
-          <div style={{ fontSize: '40px' }}>🏰</div>
-          <div style={{ textAlign: 'left' }}>
-            <h2 style={{ color: '#f9e2af', fontSize: '18px', margin: '0 0 6px', fontFamily: 'Menlo, Monaco, monospace' }}>
-              파일 던전 탐험
-            </h2>
-            <p style={{ color: '#a6adc8', fontSize: '12px', margin: 0, fontFamily: 'Menlo, Monaco, monospace' }}>
-              CLI 명령어로 던전을 탐험하며 미션을 클리어하세요!
-            </p>
-          </div>
-          <div style={{ marginLeft: 'auto', color: '#f9e2af', fontSize: '20px' }}>
-            →
-          </div>
         </section>
 
       </main>
