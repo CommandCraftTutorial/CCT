@@ -9,13 +9,20 @@
     "migrate": "knex migrate:latest",
     "migrate:rollback": "knex migrate:rollback",
     "seed": "knex seed:run",
-    "db:reset": "knex migrate:rollback && knex migrate:latest && knex seed:run"
+    "db:reset": "knex migrate:rollback && knex migrate:latest && knex seed:run",
+    "crawl": "node scripts/crawl_all.js",
+    "crawl:git": "node scripts/crawl_git.js",
+    "crawl:linux": "node scripts/crawl_linux.js",
+    "crawl:gdb": "node scripts/crawl_gdb.js",
+    "crawl:pdb": "node scripts/crawl_pdb.js"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
+    "axios": "^1.16.1",
+    "cheerio": "^1.2.0",
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
