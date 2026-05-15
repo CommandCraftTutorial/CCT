@@ -1,0 +1,207 @@
+/* 전체 페이지 배경 및 기본 폰트 설정 */
+.minigame-page {
+  background: #0d0d14;
+  color: #cdd6f4;
+  min-height: 100vh;
+  font-family: 'Menlo', 'Monaco', monospace;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 헤더 영역: 좌측 로고와 우측 버튼 정렬 */
+.mg-header {
+  display: flex;
+  align-items: center;
+  justifyContent: space-between;
+  padding: 16px 40px;
+  background: #13131f;
+  border-bottom: 1px solid #2a2a3d;
+}
+
+.mg-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mg-prompt {
+  color: #a6e3a1; /* 프롬프트는 산뜻한 초록색이나 보라색 추천 */
+  font-weight: bold;
+}
+
+.mg-logo {
+  font-weight: bold;
+  font-size: 15px;
+  letter-spacing: -0.5px;
+}
+
+/* 우측 헤더 박스 및 돌아가기 버튼 */
+.mg-header-right {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin-left: auto;
+}
+
+.mg-back-button {
+  background: transparent;
+  border: 1px solid #2a2a3d;
+  color: #a6e3a1;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.2s ease;
+}
+
+.mg-back-button:hover {
+  background: #1a3a2a;
+  border-color: #a6e3a1;
+  transform: translateX(4px); /* 마우스 올리면 우측으로 살짝 위트있게 밀리는 효과 */
+}
+
+/* 메인 컨텐츠 레이아웃 */
+.mg-main {
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 60px 40px;
+}
+
+.mg-hero {
+  text-align: center;
+  margin-bottom: 50px;
+}
+
+.mg-kicker {
+  color: #cba6f7;
+  font-size: 12px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin: 0 0 8px 0;
+}
+
+.mg-title {
+  font-size: 32px;
+  margin: 0 0 12px 0;
+  color: #cdd6f4;
+}
+
+.mg-subtitle {
+  color: #a6adc8;
+  font-size: 15px;
+  margin: 0;
+}
+
+/* 미니게임 리스트 세로 정렬 구조 */
+.mg-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* 게임 선택 카드 공통 디자인 */
+.mg-card {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: 24px 32px;
+  background: #13131f;
+  border: 1px solid #2a2a3d;
+  border-radius: 12px;
+  gap: 24px;
+  transition: all 0.25s ease;
+}
+
+/* 1번 플레이 가능한 카드 */
+.mg-card--active {
+  cursor: pointer;
+}
+
+.mg-card--active:hover {
+  border-color: #cba6f7;
+  box-shadow: 0 6px 20px rgba(203, 166, 247, 0.1);
+  transform: translateY(-2px);
+}
+
+/* 2번 잠겨있는 카드 */
+.mg-card--locked {
+  opacity: 0.4;
+  background: #0f0f18;
+}
+
+/* 카드 아이콘 박스 */
+.mg-card-icon {
+  font-size: 32px;
+  background: #1e1e2e;
+  width: 64px;
+  height: 64px;
+  display: flex;
+  align-items: center;
+  justifyContent: center;
+  border-radius: 10px;
+  border: 1px solid #2a2a3d;
+}
+
+.mg-card-content {
+  flex: 1;
+}
+
+.mg-card-title {
+  font-size: 18px;
+  margin: 0 0 6px 0;
+  color: #cdd6f4;
+}
+
+.mg-card-desc {
+  font-size: 13px;
+  color: #a6adc8;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* 우측 상단 상태 태그 뱃지 */
+.mg-card-badge {
+  position: absolute;
+  top: 14px;
+  right: 24px;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #1a3a2a;
+  color: #a6e3a1;
+  border: 1px solid #a6e3a1;
+}
+
+.mg-card-badge--coming {
+  background: #3a2a1a;
+  color: #f9e2af;
+  border: 1px solid #f9e2af;
+}
+
+/* 카드 내 진입 버튼 */
+.mg-card-btn {
+  background: transparent;
+  border: 1px solid #cba6f7;
+  color: #cba6f7;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mg-card--active:hover .mg-card-btn {
+  background: #cba6f7;
+  color: #0d0d14;
+  font-weight: bold;
+}
+
+.mg-card--locked .mg-card-btn {
+  border-color: #585b70;
+  color: #585b70;
+  cursor: not-allowed;
+}

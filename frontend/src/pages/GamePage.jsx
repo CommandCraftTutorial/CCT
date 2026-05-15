@@ -40,17 +40,18 @@ export default function GamePage() {
     }
 
     const fetchStages = async () => {
-      const res = await fetch(
-        `https://cct-xeeo.onrender.com/api/stages/category/${gameConfig.category}?difficulty=${gameConfig.difficulty}`
+      const res = await getStagesByCategory(
+      gameConfig.category,
+      gameConfig.difficulty
       )
-      const data = await res.json()
+      const data = res.data
 
       if (data.length > 0) {
         const ids = data.map(stage => stage.id)
         setStageIds(ids)
         setStageId(ids[currentIndex])
       }
-    }
+    } 
 
     fetchStages()
   }, [gameConfig.category, gameConfig.difficulty, navigate, user.id])
@@ -151,11 +152,6 @@ export default function GamePage() {
             <span className="cct-hud-value">
               {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length}
             </span>
-          </div>
-
-          <div className="cct-hud-pill">
-            <span className="cct-hud-label">SCORE</span>
-            <span className="cct-hud-value gold">🏆 {score} XP</span>
           </div>
 
           <div className="cct-pill">

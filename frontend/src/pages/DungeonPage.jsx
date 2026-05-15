@@ -100,7 +100,7 @@ export default function DungeonPage() {
             Stage {stageId} - {stage?.title}
           </span>
           <button
-            onClick={() => navigate('/category')}
+            onClick={() => navigate('/minigames')}
             style={{
               padding: '6px 12px',
               borderRadius: '6px',
