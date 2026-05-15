@@ -4,8 +4,8 @@ exports.seed = async function(knex) {
     {
       title: '어둠의 입구',
       story: `🏰 당신은 어둠의 던전 입구에 서 있습니다. 
-              탈출하려면 던전 안에 숨겨진 열쇠를 찾아야 합니다.
-              먼저 현재 위치를 확인하고, 주변을 살펴보세요.`,
+던전 안에 숨겨진 열쇠를 찾아야 합니다.
+먼저 현재 위치를 확인하고, 주변을 살펴보세요.`,
       filesystem: JSON.stringify({
         '/': {
           type: 'dir',
@@ -29,7 +29,7 @@ exports.seed = async function(knex) {
       goal_file: 'key.txt',
       goal_content: '🗝️ 탈출 열쇠: ESCAPE-2024',
       hint: 'pwd → ls → cd dungeon → ls → cat hint.txt → cd key_room → cat key.txt 순서로 탐험하세요',
-      order_num: 1,
+      order_num: 1, 
     },
     {
       title: '비밀의 방',

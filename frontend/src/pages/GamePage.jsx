@@ -16,11 +16,22 @@ export default function GamePage() {
   const [stageIds, setStageIds] = useState([])
   const [currentIndex, setCurrentIndex] = useState(0)
 
+  const [activeMode, setActiveMode] = useState('study');
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
   const gameConfig = JSON.parse(
     localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}'
   )
+
+  // 설명에서 정답 명령어를 찾아 가려주는 함수
+  const filterDescription = (description, answer) => {
+    if (!description || !answer) return description;
+  
+    // 정답 명령어(예: git init)와 일치하는 단어를 대소문자 구분 없이 찾아 "____"로 변경
+    const regex = new RegExp(answer, 'gi');
+    return description.replace(regex, '🔒 [COMMAND]');
+  };
+
 
   useEffect(() => {
     if (!user.id) {
@@ -167,12 +178,14 @@ export default function GamePage() {
           <div className="mission-card">
             <div className="section-label">› MISSION</div>
 
-            <h1 className="mission-title">{stage?.title}</h1>
+            {/* 1. 타이틀에서 정답 숨기기 */}
+            <h1 className="mission-title">새로운 미션 달성하기</h1>
 
             <p className="mission-description">
-              {stage?.description}
+              {"제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요."}
             </p>
 
+            {/* 2. 미션 정답 박스 제어 */}
             <div className="mission-command">
               <span className="mission-command-label">🎯 미션</span>
               <code>{stage?.mission}</code>
