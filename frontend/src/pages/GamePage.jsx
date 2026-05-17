@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
 import { getStage, submitCommand, updateProgress, getStagesByCategory } from '../services/api'
+import {
+  getStateStagesByCategory,
+  getStateStage,
+  resetStateStage,
+  submitStateCommand
+} from '../services/stateStageApi'
 import './GamePage.css'
 
 
@@ -22,6 +28,7 @@ export default function GamePage() {
   const gameConfig = JSON.parse(
     localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}'
   )
+  const isStateMode = gameConfig.category === 'git'
 
   // 설명에서 정답 명령어를 찾아 가려주는 함수
   const filterDescription = (description, answer) => {
@@ -40,35 +47,73 @@ export default function GamePage() {
     }
 
     const fetchStages = async () => {
-      const res = await getStagesByCategory(
-      gameConfig.category,
-      gameConfig.difficulty
-      )
-      const data = res.data
+      let data
+
+      if (isStateMode) {
+        data = await getStateStagesByCategory('git')
+      } else {
+        const res = await getStagesByCategory(
+          gameConfig.category,
+          gameConfig.difficulty
+        )
+        data = res.data
+      }
 
       if (data.length > 0) {
         const ids = data.map(stage => stage.id)
         setStageIds(ids)
         setStageId(ids[currentIndex])
       }
-    } 
+    }
 
     fetchStages()
-  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id])
+  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id, isStateMode])
 
   useEffect(() => {
     if (!stageId) return
 
-    getStage(stageId).then(res => {
-      setStage(res.data)
-      setShowHint(false)
-      setWrongCount(0)
-    })
-  }, [stageId])
+    const fetchStage = async () => {
+      try {
+        let stageData
+
+        if (isStateMode) {
+          stageData = await getStateStage(stageId)
+
+          await resetStateStage(
+            stageId,
+            user.id || user.username || 'guest',
+            'git'
+          )
+        } else {
+          const res = await getStage(stageId)
+          stageData = res.data
+        }
+
+        setStage(stageData)
+        setShowHint(false)
+        setWrongCount(0)
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchStage()
+  }, [stageId, isStateMode, user.id, user.username])
 
   const handleCommand = async (command, term) => {
     try {
-      const { data } = await submitCommand(stageId, command, user.id)
+      const data = isStateMode
+        ? await submitStateCommand(
+            stageId,
+            user.id || user.username || 'guest',
+            command,
+            'git'
+          )
+        : (await submitCommand(stageId, command, user.id)).data
+      
+      if (data.output || data.message) {
+        term.writeln(data.output || data.message)
+      }
 
       if (data.passed) {
         const newScore = score + 100
@@ -131,7 +176,9 @@ export default function GamePage() {
 
             <div className="hint-divider" />
 
-            <p className="hint-content">{stage?.hint}</p>
+            <p className="hint-content">
+              {stage?.hint || stage?.examples?.join(' → ') || '힌트가 없습니다.'}
+            </p>
 
             <button className="hint-confirm-button" onClick={() => setShowHint(false)}>
               확인
@@ -175,10 +222,12 @@ export default function GamePage() {
             <div className="section-label">› MISSION</div>
 
             {/* 1. 타이틀에서 정답 숨기기 */}
-            <h1 className="mission-title">새로운 미션 달성하기</h1>
+            <h1 className="mission-title">
+              {stage?.title || '새로운 미션 달성하기'}
+            </h1>
 
             <p className="mission-description">
-              {"제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요."}
+              {stage?.description || '제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요.'}
             </p>
 
             {/* 2. 미션 정답 박스 제어 */}

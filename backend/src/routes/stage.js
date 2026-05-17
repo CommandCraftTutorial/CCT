@@ -3,7 +3,19 @@ const router = express.Router()
 const db = require('../db')
 const { applyCommand } = require('../services/simulator/gitSimulator')
 const { gradeCommand, gradeStudy, gradeCompetition } = require('../services/grader/grader')
-
+const { parseCommand } = require('../services/parser/commandParser')
+const { applyGitCommand } = require('../services/simulator/gitStateSimulator')
+const { gradeStage } = require('../services/grader/stateGrader')
+const {
+  getStateSession,
+  setStateSession,
+  resetStateSession
+} = require('../services/session/stateSession')
+const {
+  getStateStages,
+  getStateStageById,
+  getStateStagesByCategory
+} = require('../services/stages/stateStages')
 
 // 스테이지 전체 조회
 router.get('/', async (req, res) => {
@@ -72,6 +84,114 @@ router.get('/random', async (req, res) => {
     res.json(random)
   } catch (err) {
     res.status(500).json({ error: err.message })
+  }
+})
+
+router.get('/state/list', async (req, res) => {
+  try {
+    res.json(getStateStages())
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+router.get('/state/category/:category', async (req, res) => {
+  try {
+    const stages = getStateStagesByCategory(req.params.category)
+    res.json(stages)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+router.get('/state/:id', async (req, res) => {
+  try {
+    const stage = getStateStageById(req.params.id)
+    if (!stage) return res.status(404).json({ error: 'State stage not found' })
+    res.json(stage)
+  } catch (err) {
+    res.status(500).json({ error: err.message })
+  }
+})
+
+router.post('/:id/state-submit', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { command, category = 'git', userId = 'guest' } = req.body
+
+    if (!command || command.trim() === '') {
+      return res.status(400).json({
+        success: false,
+        message: '명령어가 비어 있습니다.'
+      })
+    }
+
+    const state = getStateSession(userId, category, id)
+    const parsed = parseCommand(command, category)
+
+    if (!parsed.ok) {
+      return res.json({
+        success: false,
+        passed: false,
+        output: parsed.error,
+        message: parsed.error,
+        parsed,
+        state
+      })
+    }
+
+    let result
+
+    if (category === 'git') {
+      result = applyGitCommand(state, parsed)
+    } else {
+      return res.json({
+        success: false,
+        passed: false,
+        output: `아직 ${category} 상태 기반 시뮬레이터는 연결되지 않았습니다.`,
+        parsed,
+        state
+      })
+    }
+
+    const nextState = result.state
+    setStateSession(userId, category, id, nextState)
+
+    const grade = gradeStage(id, nextState)
+
+    res.json({
+      success: grade.cleared,
+      passed: grade.cleared,
+      output: result.message,
+      message: result.message,
+      parsed,
+      state: nextState,
+      grade,
+      score: grade.cleared ? 100 : 0,
+      combo: grade.cleared ? 1 : 0,
+      nextStageId: null
+    })
+  } catch (err) {
+    console.error('[상태 기반 채점 API 에러]:', err.message)
+    res.status(500).json({ success: false, error: err.message })
+  }
+})
+
+router.post('/:id/state-reset', async (req, res) => {
+  try {
+    const { id } = req.params
+    const { category = 'git', userId = 'guest' } = req.body
+
+    const state = resetStateSession(userId, category, id)
+
+    res.json({
+      success: true,
+      message: '상태가 초기화되었습니다.',
+      state
+    })
+  } catch (err) {
+    console.error('[상태 초기화 API 에러]:', err.message)
+    res.status(500).json({ success: false, error: err.message })
   }
 })
 
