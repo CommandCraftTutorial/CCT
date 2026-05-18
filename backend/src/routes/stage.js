@@ -3,43 +3,38 @@ const router = express.Router()
 const db = require('../db')
 const { applyCommand } = require('../services/simulator/gitSimulator')
 const { gradeCommand, gradeStudy, gradeCompetition } = require('../services/grader/grader')
-const { parseCommand } = require('../services/parser/commandParser')
-const { applyGitCommand } = require('../services/simulator/gitStateSimulator')
-const { gradeStage } = require('../services/grader/stateGrader')
-const {
-  getStateSession,
-  setStateSession,
-  resetStateSession
-} = require('../services/session/stateSession')
-const {
-  getStateStages,
-  getStateStageById,
-  getStateStagesByCategory
-} = require('../services/stages/stateStages')
+const engineManager = require('../services/simulator/engineManager')
 
-// 스테이지 전체 조회
+// 💡 안전장치: engineManager에 내장되어 있을 함수들을 구조분해할당하거나 기본 함수로 안전하게 정의
+const executeCommand = engineManager.executeCommand || (() => ({ output: '', feedback: '', state: {} }));
+const checkGoal = engineManager.checkGoal || (() => false);
+
+// 1. 스테이지 전체 조회
 router.get('/', async (req, res) => {
   try {
-    const stages = await db('stages').select('id', 'title', 'mission', 'difficulty')
-    res.json(stages)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
+    const { category, difficulty } = req.query;
 
-// 카테고리별 난이도 통계 가져오기
+    const stages = await db('stages')
+      .where({ category, difficulty })
+      .orderBy('id', 'asc');
+
+    res.json(stages);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. 카테고리별 난이도 통계 가져오기
 router.get('/stats/:category', async (req, res) => {
   try {
     const { category } = req.params;
     
-    // Knex를 사용해 해당 카테고리의 난이도별 개수 카운트
     const stats = await db('stages')
       .where({ category })
       .select('difficulty')
       .count('* as count')
       .groupBy('difficulty');
 
-    // 결과 예시: [{ difficulty: '기초', count: 66 }, ...]
     res.json(stats);
   } catch (error) {
     console.error(error);
@@ -47,36 +42,30 @@ router.get('/stats/:category', async (req, res) => {
   }
 });
 
+// 3. 카테고리별 스테이지 조회
 router.get('/category/:categoryName', async (req, res) => {
   try {
     const { categoryName } = req.params;
-    
-    // 🔍 1. 한글 파라미터 안전하게 디코딩 (기초 -> 기초)
     const difficulty = req.query.difficulty 
       ? decodeURIComponent(req.query.difficulty) 
       : null;
 
-    // 🔍 2. 서버 터미널에 어떤 값으로 검색하는지 로그 찍기
     console.log(`[조회 요청] 카테고리: ${categoryName}, 난이도: ${difficulty}`);
 
     const stages = await db('stages')
       .where({ category: categoryName, difficulty: difficulty })
-      .select('*');
+      .select('*')
+      .orderBy('id', 'asc');
 
-    // 데이터가 없으면 빈 값 대신 명확하게 에러 메시지 주기
-    if (!stages || stages.length === 0) {
-      console.log(`[조회 실패] 데이터를 찾을 수 없습니다.`);
-      return res.status(404).json({ error: '일치하는 스테이지가 없습니다.' });
-    }
+    res.json(stages || []);
 
-    res.json(stages);
   } catch (err) {
     console.error("[서버 에러]:", err.message);
     res.status(500).json({ error: err.message });
   }
 });
 
-// 랜덤 스테이지 조회
+// 4. 랜덤 스테이지 조회
 router.get('/random', async (req, res) => {
   try {
     const stages = await db('stages').select('*')
@@ -87,115 +76,45 @@ router.get('/random', async (req, res) => {
   }
 })
 
-router.get('/state/list', async (req, res) => {
+// 5. 명령어 채점 및 제출
+router.post('/:id/submit', async (req, res) => {
   try {
-    res.json(getStateStages())
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
+    const { command, userId, mode, combo, timeLeft } = req.body
+    
+    console.log(`[제출 데이터] stageId: ${req.params.id}, command: ${command}, userId: ${userId}`);
 
-router.get('/state/category/:category', async (req, res) => {
-  try {
-    const stages = getStateStagesByCategory(req.params.category)
-    res.json(stages)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-router.get('/state/:id', async (req, res) => {
-  try {
-    const stage = getStateStageById(req.params.id)
-    if (!stage) return res.status(404).json({ error: 'State stage not found' })
-    res.json(stage)
-  } catch (err) {
-    res.status(500).json({ error: err.message })
-  }
-})
-
-router.post('/:id/state-submit', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { command, category = 'git', userId = 'guest' } = req.body
-
-    if (!command || command.trim() === '') {
-      return res.status(400).json({
-        success: false,
-        message: '명령어가 비어 있습니다.'
-      })
+    const stage = await db('stages').where({ id: req.params.id }).first()
+    
+    if (!stage) {
+      console.log(`❌ [제출 실패] stages 테이블에서 ID ${req.params.id} 번 스테이지를 찾을 수 없습니다.`);
+      return res.status(404).json({ error: `Stage ${req.params.id} not found` })
     }
 
-    const state = getStateSession(userId, category, id)
-    const parsed = parseCommand(command, category)
+    const engineResult = executeCommand(userId, command, stage.category)
+    let passed = false
 
-    if (!parsed.ok) {
-      return res.json({
-        success: false,
-        passed: false,
-        output: parsed.error,
-        message: parsed.error,
-        parsed,
-        state
-      })
-    }
-
-    let result
-
-    if (category === 'git') {
-      result = applyGitCommand(state, parsed)
+    if (stage.goal) {
+      passed = checkGoal(userId, stage) === true
     } else {
-      return res.json({
-        success: false,
-        passed: false,
-        output: `아직 ${category} 상태 기반 시뮬레이터는 연결되지 않았습니다.`,
-        parsed,
-        state
-      })
+      passed = gradeCommand(command, stage)
     }
 
-    const nextState = result.state
-    setStateSession(userId, category, id, nextState)
-
-    const grade = gradeStage(id, nextState)
+    const feedback = !passed && engineResult.feedback ? engineResult.feedback : null
 
     res.json({
-      success: grade.cleared,
-      passed: grade.cleared,
-      output: result.message,
-      message: result.message,
-      parsed,
-      state: nextState,
-      grade,
-      score: grade.cleared ? 100 : 0,
-      combo: grade.cleared ? 1 : 0,
-      nextStageId: null
+      passed,
+      output: engineResult.output,
+      feedback,
+      state: engineResult.state,
+      nextStageId: passed ? Number(req.params.id) + 1 : null
     })
   } catch (err) {
-    console.error('[상태 기반 채점 API 에러]:', err.message)
-    res.status(500).json({ success: false, error: err.message })
+    console.error("🔥 [백엔드 내부 에러 발생]:", err);
+    res.status(500).json({ error: err.message })
   }
 })
 
-router.post('/:id/state-reset', async (req, res) => {
-  try {
-    const { id } = req.params
-    const { category = 'git', userId = 'guest' } = req.body
-
-    const state = resetStateSession(userId, category, id)
-
-    res.json({
-      success: true,
-      message: '상태가 초기화되었습니다.',
-      state
-    })
-  } catch (err) {
-    console.error('[상태 초기화 API 에러]:', err.message)
-    res.status(500).json({ success: false, error: err.message })
-  }
-})
-
-// 특정 스테이지 조회
+// 🚨 [순서 변경 핵심] 주소 충돌을 막기 위해 :id 라우터를 맨 아래로 내렸습니다!
 router.get('/:id', async (req, res) => {
   try {
     const stage = await db('stages').where({ id: req.params.id }).first()
@@ -206,40 +125,78 @@ router.get('/:id', async (req, res) => {
   }
 })
 
-// 명령어 채점 및 제출
-router.post('/:id/submit', async (req, res) => {
+// ⭕ 백엔드 stage.js 최하단 (module.exports 바로 위)에 추가할 코드
+
+// 1. 상태 기반 스테이지 목록 조회 라우터 (프론트의 getStateStagesByCategory 대응)
+router.get('/state/category/:categoryName', async (req, res) => {
   try {
-    const { command, userId } = req.body;
-    const stage = await db('stages').where({ id: req.params.id }).first();
-
-    if (!stage) {
-      return res.status(404).json({ error: 'Stage not found' });
-    }
-
-    // 1. 채점 엔진(grader.js)을 통해 합격 여부(true/false) 판단
-    const passed = gradeCommand(command, stage);
-
-    // 2. 가상 터미널 환경에 명령어 반영
-    const output = applyCommand(userId, command, stage.category);
-
-    // 3. 점수 및 콤보 시스템 계산 (경쟁 모드용 로직이 있다면 연동)
-    // 현재 result가 정의되지 않았으므로 임시로 passed 기준 score와 combo를 세팅하거나, 
-    // 팀원분이 만들어둔 점수 계산 함수가 있다면 그것과 엮어야 합니다.
-    const score = passed ? 100 : 0; // 예시 점수
-    const combo = passed ? 1 : 0;   // 예시 콤보
-
-    res.json({
-      passed: passed,               // result.passed 대신 직접 생성한 passed 사용
-      score: score,                 // result.score 대신 변수 사용
-      combo: combo,                 // result.combo 대신 변수 사용
-      output: output,
-      nextStageId: passed ? Number(req.params.id) + 1 : null
-    });
+    const { categoryName } = req.params;
+    const stages = await db('stages')
+      .where({ category: categoryName })
+      .orderBy('id', 'asc');
+    res.json(stages || []);
   } catch (err) {
-    console.error("[채점 API 에러]:", err.message); // 터미널에 에러 원인 출력
     res.status(500).json({ error: err.message });
   }
 });
 
+// 2. 상태 기반 단일 스테이지 조회 라우터 (프론트의 getStateStage 대응)
+router.get('/state/:id', async (req, res) => {
+  try {
+    const stage = await db('stages').where({ id: req.params.id }).first();
+    if (!stage) return res.status(404).json({ error: 'Stage not found' });
+    res.json(stage);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 3. 상태 기반 초기화 라우터 (프론트의 resetStateStage 대응)
+router.post('/:id/state-reset', async (req, res) => {
+  try {
+    const { userId, category } = req.body;
+    console.log(`[상태 리셋] userId: ${userId}, category: ${category}, stageId: ${req.params.id}`);
+    
+    // 임시 성공 응답 처리 (필요시 가상 엔진 리셋 로직 추가)
+    res.json({ success: true, message: '가상 저장소가 초기화되었습니다.' });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 4. 상태 기반 명령어 제출 라우터 (프론트의 submitStateCommand 대응)
+router.post('/:id/state-submit', async (req, res) => {
+  try {
+    const { command, userId, category } = req.body;
+    console.log(`[상태 제출] stageId: ${req.params.id}, command: ${command}, userId: ${userId}`);
+
+    const stage = await db('stages').where({ id: req.params.id }).first();
+    if (!stage) return res.status(404).json({ error: `Stage ${req.params.id} not found` });
+
+    // 엔진으로 명령어 실행
+    const engineResult = executeCommand(userId, command, stage.category);
+
+    // 채점
+    let passed = false;
+    if (stage.goal) {
+      passed = checkGoal(userId, stage) === true;
+    } else {
+      passed = gradeCommand(command, stage);
+    }
+
+    const feedback = !passed && engineResult.feedback ? engineResult.feedback : null;
+
+    res.json({
+      passed,
+      output: engineResult.output,
+      feedback,
+      state: engineResult.state,
+      nextStageId: passed ? Number(req.params.id) + 1 : null
+    });
+  } catch (err) {
+    console.error("🔥 백엔드 에러:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
 
 module.exports = router

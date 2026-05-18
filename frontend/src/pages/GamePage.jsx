@@ -47,53 +47,56 @@ export default function GamePage() {
     }
 
     const fetchStages = async () => {
-      let data
-
-      if (isStateMode) {
-        data = await getStateStagesByCategory('git')
-      } else {
+      try {
+        // 🚨 Git이든 아니든 유별나게 구별하지 말고 모두 똑같은 정상적인 백엔드 라우터를 타게 만듭니다!
         const res = await getStagesByCategory(
           gameConfig.category,
           gameConfig.difficulty
         )
-        data = res.data
-      }
+        const data = res.data
 
-      if (data.length > 0) {
-        const ids = data.map(stage => stage.id)
-        setStageIds(ids)
-        setStageId(ids[currentIndex])
+        if (data && data.length > 0) {
+          const ids = data.map(stage => stage.id)
+          setStageIds(ids)
+          setStageId(ids[currentIndex])
+        } else {
+          // 데이터가 아예 없을 때를 대비한 안전장치
+          setStageIds([])
+          setStageId(null)
+        }
+      } catch (err) {
+        console.error("스테이지 목록 조회 실패:", err)
       }
     }
 
     fetchStages()
-  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id, isStateMode])
+  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id]) // dependency에서 isStateMode 제거
 
   useEffect(() => {
     if (!stageId) return
 
     const fetchStage = async () => {
       try {
-        let stageData
+        // 1. Git이든 아니든 데이터는 무조건 404 안 나는 안전한 getStage로 가져옵니다!
+        const res = await getStage(stageId)
+        const stageData = res.data
 
-        if (isStateMode) {
-          stageData = await getStateStage(stageId)
-
+        /*
+        // 2. 만약 Git 모드라면 백엔드 가상 엔진 상태를 리셋해주는 함수만 따로 실행해 줍니다.
+        if (isStateMode && typeof resetStateStage === 'function') {
           await resetStateStage(
             stageId,
             user.id || user.username || 'guest',
             'git'
           )
-        } else {
-          const res = await getStage(stageId)
-          stageData = res.data
         }
+        */
 
         setStage(stageData)
         setShowHint(false)
         setWrongCount(0)
       } catch (err) {
-        console.error(err)
+        console.error("❌ 스테이지 상세 데이터 로딩 실패:", err)
       }
     }
 
@@ -223,11 +226,11 @@ export default function GamePage() {
 
             {/* 1. 타이틀에서 정답 숨기기 */}
             <h1 className="mission-title">
-              {stage?.title || '새로운 미션 달성하기'}
+              {'새로운 미션 달성하기'}
             </h1>
 
             <p className="mission-description">
-              {stage?.description || '제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요.'}
+              {'제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요.'}
             </p>
 
             {/* 2. 미션 정답 박스 제어 */}

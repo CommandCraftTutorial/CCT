@@ -1,314 +1,61 @@
-/**
- * 사용자가 입력한 CLI 명령어를 공통 형식으로 파싱하는 함수
- *
- * 예시:
- * "git commit -m 'first commit'"
- *
- * 결과:
- * {
- *   ok: ture,
- *   raw: "git commit -m 'first commit'",
- *   category: "git",
- *   command: "git",
- *   subcommand: "commit",
- *   args: [],
- *   options: { m: "first commit" },
- *   tokens: ["git", "commit", "-m", "first commit"]
- * }
- */
+function parseCommand(input) {
+  if (!input || !input.trim()) return null
 
-const VALID_CATEGORIES = ["git", "linux", "gdb", "pdb"];
+  const trimmed = input.trim()
+  const tokens = trimmed.match(/(?:[^\s"']+|"[^"]*"|'[^']*')+/g) || []
 
-const COMMANDS_BY_CATEGORY = {
-  git: ["git"],
-
-  linux: [
-    "ls",
-    "cd",
-    "pwd",
-    "mkdir",
-    "touch",
-    "rm",
-    "cp",
-    "mv",
-    "cat",
-    "echo"
-  ],
-
-  gdb: [
-    "gdb",
-    "break",
-    "b",
-    "run",
-    "r",
-    "print",
-    "p",
-    "continue",
-    "c",
-    "next",
-    "n",
-    "step",
-    "s",
-    "list",
-    "l",
-    "quit",
-    "q"
-  ],
-
-  pdb: [
-    "pdb",
-    "break",
-    "b",
-    "continue",
-    "c",
-    "next",
-    "n",
-    "step",
-    "s",
-    "print",
-    "p",
-    "where",
-    "w",
-    "list",
-    "l",
-    "quit",
-    "q",
-    "until",
-    "unt"
-  ]
-};
-
-function tokenize(input) {
-  const tokens = [];
-  let current = "";
-  let quote = null;
-
-  for (let i = 0; i < input.length; i++) {
-    const char = input[i];
-
-    if ((char === '"' || char === "'") && quote === null) {
-      quote = char;
-      continue;
-    }
-
-    if (char === quote) {
-      quote = null;
-      continue;
-    }
-
-    if (char === " " && quote === null) {
-      if (current.length > 0) {
-        tokens.push(current);
-        current = "";
-      }
-      continue;
-    }
-
-    current += char;
+  const parsed = {
+    raw: trimmed,
+    base: tokens[0] || '',
+    subcommand: null,
+    args: [],
+    options: {},
+    flags: []
   }
 
-  if (quote !== null) {
-    return {
-      tokens: [],
-      error: "따옴표가 닫히지 않았습니다."
-    };
+  let i = 1
+
+  // git, gdb 같은 경우 subcommand 파싱
+  if (['git', 'gdb', 'python'].includes(parsed.base) && tokens[1] && !tokens[1].startsWith('-')) {
+    parsed.subcommand = tokens[1]
+    i = 2
   }
 
-  if (current.length > 0) {
-    tokens.push(current);
-  }
+  // 나머지 토큰 파싱
+  while (i < tokens.length) {
+    const token = tokens[i]
 
-  return {
-    tokens,
-    error: null
-  };
-}
-
-function normalizeCategory(category) {
-  if (!category) return null;
-
-  const normalized = String(category).toLowerCase();
-
-  if (!VALID_CATEGORIES.includes(normalized)) {
-    return null;
-  }
-
-  return normalized;
-}
-
-function isCommandAllowedInCategory(command, category) {
-  const allowedCommands = COMMANDS_BY_CATEGORY[category];
-
-  if (!allowedCommands) {
-    return false;
-  }
-
-  return allowedCommands.includes(command);
-}
-
-function parseOptionsAndArgs(tokens) {
-  const options = {};
-  const args = [];
-
-  for (let i = 0; i < tokens.length; i++) {
-    const token = tokens[i];
-
-    if (token.startsWith("--")) {
-      const optionName = token.slice(2);
-      const nextToken = tokens[i + 1];
-
-      if (!optionName) {
-        args.push(token);
-        continue;
-      }
-
-      if (nextToken && !nextToken.startsWith("-")) {
-        options[optionName] = nextToken;
-        i++;
+    if (token.startsWith('--')) {
+      // --option=value 또는 --option value
+      const [key, val] = token.slice(2).split('=')
+      if (val !== undefined) {
+        parsed.options[key] = val
+      } else if (tokens[i + 1] && !tokens[i + 1].startsWith('-')) {
+        parsed.options[key] = tokens[i + 1].replace(/^["']|["']$/g, '')
+        i++
       } else {
-        options[optionName] = true;
+        parsed.flags.push(key)
       }
-
-      continue;
-    }
-
-    if (token.startsWith("-") && token.length > 1) {
-      const optionName = token.slice(1);
-      const nextToken = tokens[i + 1];
-
-      if (nextToken && !nextToken.startsWith("-")) {
-        options[optionName] = nextToken;
-        i++;
+    } else if (token.startsWith('-') && token.length === 2) {
+      // -m "message" 같은 단일 옵션
+      const key = token.slice(1)
+      if (tokens[i + 1] && !tokens[i + 1].startsWith('-')) {
+        parsed.options[key] = tokens[i + 1].replace(/^["']|["']$/g, '')
+        i++
       } else {
-        options[optionName] = true;
+        parsed.flags.push(key)
       }
-
-      continue;
+    } else if (token.startsWith('-') && token.length > 2) {
+      // -al 같은 복합 플래그
+      token.slice(1).split('').forEach(f => parsed.flags.push(f))
+    } else {
+      parsed.args.push(token.replace(/^["']|["']$/g, ''))
     }
 
-    args.push(token);
+    i++
   }
 
-  return { options, args };
+  return parsed
 }
 
-function parseCommand(input, category) {
-  const raw = String(input || "").trim();
-  const normalizedCategory = normalizeCategory(category);
-
-  if (!raw) {
-    return {
-      ok: false,
-      raw,
-      category: normalizedCategory,
-      command: null,
-      subcommand: null,
-      args: [],
-      options: {},
-      tokens: [],
-      error: "명령어가 비어 있습니다."
-    };
-  }
-
-  if (!normalizedCategory) {
-    return {
-      ok: false,
-      raw,
-      category: null,
-      command: null,
-      subcommand: null,
-      args: [],
-      options: {},
-      tokens: [],
-      error: "올바른 카테고리가 필요합니다. category는 git, linux, gdb, pdb 중 하나여야 합니다."
-    };
-  }
-
-  const tokenizeResult = tokenize(raw);
-
-  if (tokenizeResult.error) {
-    return {
-      ok: false,
-      raw,
-      category: normalizedCategory,
-      command: null,
-      subcommand: null,
-      args: [],
-      options: {},
-      tokens: [],
-      error: tokenizeResult.error
-    };
-  }
-
-  const tokens = tokenizeResult.tokens;
-  const command = tokens[0];
-
-  if (!command) {
-    return {
-      ok: false,
-      raw,
-      category: normalizedCategory,
-      command: null,
-      subcommand: null,
-      args: [],
-      options: {},
-      tokens,
-      error: "명령어를 해석할 수 없습니다."
-    };
-  }
-
-  if (!isCommandAllowedInCategory(command, normalizedCategory)) {
-    return {
-      ok: false,
-      raw,
-      category: normalizedCategory,
-      command,
-      subcommand: null,
-      args: [],
-      options: {},
-      tokens,
-      error: `${normalizedCategory} 카테고리에서 사용할 수 없는 명령어입니다: ${command}`
-    };
-  }
-
-  let subcommand = null;
-  let remainingTokens = tokens.slice(1);
-
-  if (normalizedCategory === "git") {
-    subcommand = tokens[1] || null;
-    remainingTokens = tokens.slice(2);
-
-    if (!subcommand) {
-      return {
-        ok: false,
-        raw,
-        category: normalizedCategory,
-        command,
-        subcommand,
-        args: [],
-        options: {},
-        tokens,
-        error: "git 명령어에는 하위 명령어가 필요합니다. 예: git init, git add README.md"
-      };
-    }
-  }
-
-  const { options, args } = parseOptionsAndArgs(remainingTokens);
-
-  return {
-    ok: true,
-    raw,
-    category: normalizedCategory,
-    command,
-    subcommand,
-    args,
-    options,
-    tokens
-  };
-}
-
-module.exports = {
-  parseCommand,
-  tokenize,
-  COMMANDS_BY_CATEGORY
-};
+module.exports = { parseCommand }
