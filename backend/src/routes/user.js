@@ -23,25 +23,36 @@ router.post('/login', async (req, res) => {
 // 유저 진행 상황 업데이트
 router.patch('/:id/progress', async (req, res) => {
   try {
-    const { current_stage, score } = req.body
-    await db('users').where({ id: req.params.id }).update({ current_stage, score })
+    const { current_stage, score, mode } = req.body
+
+    if (mode === 'competition') {
+      await db('users').where({ id: req.params.id }).update({ competition_score: score })
+    } else {
+      await db('users').where({ id: req.params.id }).update({ current_stage, score })
+    }
+
     res.json({ success: true })
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
 
+
 // 리더보드 조회
 router.get('/leaderboard', async (req, res) => {
   try {
+    const { mode } = req.query
+
+    const scoreCol = mode === 'competition' ? 'competition_score' : 'score'
+
     const users = await db('users')
-      .select('id', 'username', 'current_stage', 'score')
-      .orderBy('score', 'desc')
+      .select('id', 'username', 'current_stage', 'score', 'competition_score')
+      .orderBy(scoreCol, 'desc')
       .limit(100)
+
     res.json(users)
   } catch (err) {
     res.status(500).json({ error: err.message })
   }
 })
-
 module.exports = router
