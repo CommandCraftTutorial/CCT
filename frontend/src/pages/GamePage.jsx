@@ -2,6 +2,12 @@ import { useState, useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import Terminal from '../components/Terminal/Terminal'
 import { getStage, submitCommand, updateProgress, getStagesByCategory } from '../services/api'
+import {
+  getStateStagesByCategory,
+  getStateStage,
+  resetStateStage,
+  submitStateCommand
+} from '../services/stateStageApi'
 import './GamePage.css'
 
 
@@ -22,6 +28,7 @@ export default function GamePage() {
   const gameConfig = JSON.parse(
     localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}'
   )
+  const isStateMode = gameConfig.category === 'git'
 
   // 설명에서 정답 명령어를 찾아 가려주는 함수
   const filterDescription = (description, answer) => {
@@ -40,35 +47,76 @@ export default function GamePage() {
     }
 
     const fetchStages = async () => {
-      const res = await getStagesByCategory(
-      gameConfig.category,
-      gameConfig.difficulty
-      )
-      const data = res.data
+      try {
+        // 🚨 Git이든 아니든 유별나게 구별하지 말고 모두 똑같은 정상적인 백엔드 라우터를 타게 만듭니다!
+        const res = await getStagesByCategory(
+          gameConfig.category,
+          gameConfig.difficulty
+        )
+        const data = res.data
 
-      if (data.length > 0) {
-        const ids = data.map(stage => stage.id)
-        setStageIds(ids)
-        setStageId(ids[currentIndex])
+        if (data && data.length > 0) {
+          const ids = data.map(stage => stage.id)
+          setStageIds(ids)
+          setStageId(ids[currentIndex])
+        } else {
+          // 데이터가 아예 없을 때를 대비한 안전장치
+          setStageIds([])
+          setStageId(null)
+        }
+      } catch (err) {
+        console.error("스테이지 목록 조회 실패:", err)
       }
-    } 
+    }
 
     fetchStages()
-  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id])
+  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id]) // dependency에서 isStateMode 제거
 
   useEffect(() => {
     if (!stageId) return
 
-    getStage(stageId).then(res => {
-      setStage(res.data)
-      setShowHint(false)
-      setWrongCount(0)
-    })
-  }, [stageId])
+    const fetchStage = async () => {
+      try {
+        // 1. Git이든 아니든 데이터는 무조건 404 안 나는 안전한 getStage로 가져옵니다!
+        const res = await getStage(stageId)
+        const stageData = res.data
+
+        /*
+        // 2. 만약 Git 모드라면 백엔드 가상 엔진 상태를 리셋해주는 함수만 따로 실행해 줍니다.
+        if (isStateMode && typeof resetStateStage === 'function') {
+          await resetStateStage(
+            stageId,
+            user.id || user.username || 'guest',
+            'git'
+          )
+        }
+        */
+
+        setStage(stageData)
+        setShowHint(false)
+        setWrongCount(0)
+      } catch (err) {
+        console.error("❌ 스테이지 상세 데이터 로딩 실패:", err)
+      }
+    }
+
+    fetchStage()
+  }, [stageId, isStateMode, user.id, user.username])
 
   const handleCommand = async (command, term) => {
     try {
-      const { data } = await submitCommand(stageId, command, user.id)
+      const data = isStateMode
+        ? await submitStateCommand(
+            stageId,
+            user.id || user.username || 'guest',
+            command,
+            'git'
+          )
+        : (await submitCommand(stageId, command, user.id)).data
+      
+      if (data.output || data.message) {
+        term.writeln(data.output || data.message)
+      }
 
       if (data.passed) {
         const newScore = score + 100
@@ -131,7 +179,9 @@ export default function GamePage() {
 
             <div className="hint-divider" />
 
-            <p className="hint-content">{stage?.hint}</p>
+            <p className="hint-content">
+              {stage?.hint || stage?.examples?.join(' → ') || '힌트가 없습니다.'}
+            </p>
 
             <button className="hint-confirm-button" onClick={() => setShowHint(false)}>
               확인
@@ -175,10 +225,12 @@ export default function GamePage() {
             <div className="section-label">› MISSION</div>
 
             {/* 1. 타이틀에서 정답 숨기기 */}
-            <h1 className="mission-title">새로운 미션 달성하기</h1>
+            <h1 className="mission-title">
+              {'새로운 미션 달성하기'}
+            </h1>
 
             <p className="mission-description">
-              {"제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요."}
+              {'제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요.'}
             </p>
 
             {/* 2. 미션 정답 박스 제어 */}

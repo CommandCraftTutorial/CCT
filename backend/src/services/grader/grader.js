@@ -7,13 +7,27 @@ function gradeCommand(input, stage) {
   if (!trimmed) return false
 
   // 3. 정규표현식 채점
+  // 3. 정규표현식 채점
   if (stage.answer_regex) {
     try {
-      const regex = new RegExp(stage.answer_regex)
-      return regex.test(trimmed)
+      // 만약 터미널 에러 메시지가 인자로 섞여 들어왔다면 채점하지 않고 바로 탈락
+      if (trimmed.includes('command not found')) return false;
+
+      // DB 정규식을 가져옵니다.
+      const regexStr = stage.answer_regex.trim();
+      const regex = new RegExp(regexStr);
+      
+      // [핵심] regex.test()는 중간에 매칭되어도 true를 주므로, 
+      // 강제로 전체 문장이 일치하는지 한 번 더 검증하는 안전장치를 둡니다.
+      const match = trimmed.match(regex);
+      if (match && match[0] === trimmed) {
+        return true;
+      }
+      
+      return false;
     } catch (e) {
-      console.error('정규식 패턴 오류:', e)
-      return false
+      console.error('정규식 패턴 오류:', e);
+      return false;
     }
   }
 
