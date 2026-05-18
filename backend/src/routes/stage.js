@@ -177,14 +177,16 @@ router.post('/:id/state-submit', async (req, res) => {
     const engineResult = executeCommand(userId, command, stage.category);
 
     // 채점
-    let passed = false;
-    if (stage.goal) {
-      passed = checkGoal(userId, stage) === true;
-    } else {
-      passed = gradeCommand(command, stage);
-    }
+    let passed = false
+    let feedback = null
 
-    const feedback = !passed && engineResult.feedback ? engineResult.feedback : null;
+    if (stage.goal) {
+      const goalResult = checkGoal(userId, stage)
+      passed = goalResult === true
+      feedback = typeof goalResult === 'object' ? goalResult.feedback : null
+    } else {
+      passed = gradeCommand(command, stage)
+    }
 
     res.json({
       passed,

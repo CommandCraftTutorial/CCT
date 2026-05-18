@@ -16,9 +16,12 @@ function parseCommand(input) {
   let i = 1
 
   // git, gdb 같은 경우 subcommand 파싱
-  if (['git', 'gdb', 'python'].includes(parsed.base) && tokens[1] && !tokens[1].startsWith('-')) {
-    parsed.subcommand = tokens[1]
-    i = 2
+  if (['git', 'gdb', 'python'].includes(parsed.base) && tokens[1]) {
+    // --version, --help 같은 경우도 subcommand로 처리
+    if (!tokens[1].startsWith('-') || tokens[1] === '--version' || tokens[1] === '--help') {
+      parsed.subcommand = tokens[1]
+      i = 2
+    }
   }
 
   // 나머지 토큰 파싱

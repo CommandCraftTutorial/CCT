@@ -16,12 +16,12 @@ export const getStage = (id) =>
 export const submitCommand = (stageId, command, userId) =>
   api.post(`/stages/${stageId}/submit`, { command, userId })
 
-export const updateProgress = (userId, current_stage, score) =>
-  api.patch(`/users/${userId}/progress`, { current_stage, score })
+export const updateProgress = (userId, current_stage, score, mode = 'tutorial') =>
+  api.patch(`/users/${userId}/progress`, { current_stage, score, mode })
 
 //랭킹 대시보드
-export const getLeaderboard = () =>
-  api.get('/users/leaderboard')
+export const getLeaderboard = (mode = 'tutorial') =>
+  api.get(`/users/leaderboard?mode=${mode}`)
 
 //미니게임
 export const getDungeonStages = () =>

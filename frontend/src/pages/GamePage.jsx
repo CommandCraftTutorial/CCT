@@ -81,17 +81,12 @@ export default function GamePage() {
         const res = await getStage(stageId)
         const stageData = res.data
 
-        /*
+        
         // 2. 만약 Git 모드라면 백엔드 가상 엔진 상태를 리셋해주는 함수만 따로 실행해 줍니다.
         if (isStateMode && typeof resetStateStage === 'function') {
-          await resetStateStage(
-            stageId,
-            user.id || user.username || 'guest',
-            'git'
-          )
+          await resetStateStage(stageId, user.id || user.username || 'guest','git')
         }
-        */
-
+        
         setStage(stageData)
         setShowHint(false)
         setWrongCount(0)
@@ -151,6 +146,9 @@ export default function GamePage() {
         }
       } else {
         term.writeln('❌ 틀렸습니다. 힌트 버튼을 눌러보세요!')
+        if (data.feedback) {
+          term.writeln(`💡 ${data.feedback}`) 
+        }
         setWrongCount(prev => prev + 1)
 
         setOverlay('fail')

@@ -16,6 +16,7 @@ class VirtualGitEngine {
     this.stash = []
     this.tags = []
     this.config = {}
+    this.trackedFiles = []
   }
 
   execute(parsed) {
@@ -113,6 +114,7 @@ class VirtualGitEngine {
           timestamp: new Date().toISOString()
         }
         this.branches[this.currentBranch].commits.push(commit)
+        this.trackedFiles = [...new Set([...this.trackedFiles, ...commit.files])] 
         this.stagedFiles = []
         return {
           output: `[${this.currentBranch} ${commit.hash}] ${message}\n ${commit.files.length} file(s) changed`,
@@ -317,7 +319,9 @@ class VirtualGitEngine {
       stagedFiles: this.stagedFiles,
       remotes: this.remotes,
       tags: this.tags,
-      config: this.config
+      config: this.config,
+      trackedFiles: this.trackedFiles,
+      stash: this.stash.length
     }
   }
 }
