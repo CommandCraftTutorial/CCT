@@ -7,95 +7,113 @@ export default function ModePage() {
 
   return (
     <div className="mode-page">
-      {/* 헤더 */}
       <header className="cct-header">
         <div className="cct-brand">
           <span className="cct-prompt">&gt;_</span>
           <span className="cct-logo">CommandCraftTutorial</span>
         </div>
+
         <div className="cct-pill">
           <span>👤</span>
           <span>{user.username}</span>
         </div>
       </header>
 
-      {/* 메인 */}
       <main className="mode-main">
         <section className="mode-hero">
-          <p className="mode-kicker">SELECT MODE</p>
-          <h1 className="mode-title">모드를 선택하세요</h1>
+          <p className="mode-kicker">COMMAND MODE HUB</p>
+          <h1 className="mode-title">Select Your Play Mode</h1>
           <p className="mode-subtitle">
-            {/* 💡 문구에 미니 게임도 살짝 녹여줬습니다 */}
-            학습 모드로 명령어를 배우고, 경쟁 모드와 미니 게임으로 실력을 증명하세요.
+            학습 방식과 플레이 스타일을 선택하고 명령어 훈련을 시작하세요.
           </p>
         </section>
 
-        <section className="mode-cards">
-          {/* 학습 모드 */}
-          <div
+        <section className="mode-grid">
+          <article
             className="mode-card mode-card--study"
             onClick={() => navigate('/category')}
           >
-            <div className="mode-card-icon">📚</div>
-            <h2 className="mode-card-title">학습 모드</h2>
-            <p className="mode-card-desc">
-              카테고리와 난이도를 선택해서<br />
-              단계별로 명령어를 학습하세요.
-            </p>
-            <ul className="mode-card-features">
-              <li>✅ Git / Linux / GDB / PDB</li>
-              <li>✅ 기초 / 중급 / 심화 난이도</li>
-              <li>✅ 힌트 제공</li>
-              <li>✅ 진행상황 저장</li>
-            </ul>
-            <button className="mode-card-button mode-card-button--study">
-              학습 시작하기 →
-            </button>
-          </div>
+            <div className="mode-card-command">
+              <span className="mode-dot" />
+              <span>$ start study</span>
+              <span className="mode-badge">LEARN</span>
+            </div>
 
-          {/* 경쟁 모드 */}
-          <div
+            <div className="mode-card-body">
+              <div className="mode-icon-box">📚</div>
+              <div>
+                <h2>Study Mode</h2>
+                <p>카테고리와 난이도를 선택해서 단계별로 명령어를 학습하세요.</p>
+              </div>
+            </div>
+
+            <div className="mode-log-box">
+              <span>📋 Mode Log</span>
+              <p>Git · Linux · GDB · PDB 명령어 학습</p>
+            </div>
+
+            <button className="mode-action-button">🎮 학습 시작하기</button>
+          </article>
+
+          <article
             className="mode-card mode-card--competition"
             onClick={() => navigate('/competition')}
           >
-            <div className="mode-card-icon">⚔️</div>
-            <h2 className="mode-card-title">경쟁 모드</h2>
-            <p className="mode-card-desc">
-              랜덤 명령어를 맞추고<br />
-              랭킹에서 실력을 겨뤄보세요.
-            </p>
-            <ul className="mode-card-features">
-              <li>🎯 랜덤 명령어 출제</li>
-              <li>🏆 실시간 랭킹 반영</li>
-              <li>⏱️ 제한 시간 내 풀기</li>
-              <li>🔥 콤보 보너스 점수</li>
-            </ul>
-            <button className="mode-card-button mode-card-button--competition">
-              경쟁 시작하기 →
-            </button>
-          </div>
+            <div className="mode-card-command">
+              <span className="mode-dot" />
+              <span>$ start competition</span>
+              <span className="mode-badge">RANK</span>
+            </div>
 
-          {/* ⭐ 3. 미니 게임 모드 추가 */}
-          <div
-            className="mode-card mode-card--minigame"
-            onClick={() => navigate('/minigames')} // 나중에 허브 페이지를 만들면 '/minigame'으로 변경 가능
+            <div className="mode-card-body">
+              <div className="mode-icon-box">⚔️</div>
+              <div>
+                <h2>Competition</h2>
+                <p>랜덤 명령어를 제한 시간 안에 풀고 랭킹에서 실력을 겨뤄보세요.</p>
+              </div>
+            </div>
+
+            <div className="mode-log-box">
+              <span>📋 Mode Log</span>
+              <p>랜덤 출제 · 실시간 랭킹 · 콤보 보너스</p>
+            </div>
+
+            <button className="mode-action-button">🏆 경쟁 시작하기</button>
+          </article>
+        </section>
+
+        <section className="minigame-section">
+          <article
+            className="minigame-card"
+            onClick={() => navigate('/minigames')}
           >
-            <div className="mode-card-icon">🏰</div>
-            <h2 className="mode-card-title">미니 게임</h2>
-            <p className="mode-card-desc">
-              색다른 게임 룰 속에서<br />
-              Git 커맨드로 난관을 극복하세요.
-            </p>
-            <ul className="mode-card-features">
-              <li>👾 몬스터 처치 던전 크롤러</li>
-              <li>⚔️ 명령어 입력으로 턴제 전투</li>
-              <li>💎 던전 클리어 보상</li>
-              <li>🆕 다양한 모드 추가 예정</li>
-            </ul>
-            <button className="mode-card-button mode-card-button--minigame">
-              게임 입장하기 →
-            </button>
-          </div>
+            <div className="mode-card-command minigame-command">
+              <span className="mode-dot" />
+              <span>$ enter dungeon</span>
+              <span className="mode-badge">MINI GAME</span>
+            </div>
+
+            <div className="minigame-left">
+              <div className="minigame-body">
+                <div className="mode-icon-box">🏰</div>
+                <div>
+                  <h2>Mini Game</h2>
+                  <p>
+                    색다른 게임 룰 속에서 Git 커맨드로 몬스터를 처치하고 던전을 클리어하세요.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="minigame-right">
+              <div className="mode-log-box">
+                <span>📋 Dungeon Log</span>
+                <p>턴제 전투 · 명령어 입력 · 클리어 보상 · 추가 모드 예정</p>
+              </div>
+
+              <button className="mode-action-button">🎮 게임 입장하기</button>
+            </div>
+          </article>
         </section>
       </main>
     </div>
