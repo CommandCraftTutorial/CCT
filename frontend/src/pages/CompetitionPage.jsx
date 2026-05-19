@@ -19,10 +19,12 @@ export default function CompetitionPage() {
   const [rankings, setRankings] = useState([])
   const [showHint, setShowHint] = useState(false)
   const [wrongCount, setWrongCount] = useState(0)
+
   const inputRef = useRef(null)
   const timerRef = useRef(null)
   const bottomRef = useRef(null)
   const gameOverCalledRef = useRef(false)
+
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
@@ -49,6 +51,7 @@ export default function CompetitionPage() {
       navigate('/')
       return
     }
+
     fetchRandomStage()
     fetchRankings()
     inputRef.current?.focus()
@@ -56,6 +59,7 @@ export default function CompetitionPage() {
 
   useEffect(() => {
     if (gameOver) return
+
     timerRef.current = setInterval(() => {
       setTimer(prev => {
         if (prev <= 1) {
@@ -66,6 +70,7 @@ export default function CompetitionPage() {
         return prev - 1
       })
     }, 1000)
+
     return () => clearInterval(timerRef.current)
   }, [stage, gameOver])
 
@@ -79,13 +84,19 @@ export default function CompetitionPage() {
 
     setGameOver(true)
     clearInterval(timerRef.current)
-    setHistory(prev => [...prev, { type: 'error', text: '⏰ 시간 초과! 게임 오버!' }])
+
+    setHistory(prev => [
+      ...prev,
+      { type: 'error', text: '⏰ 시간 초과! 게임 오버!' }
+    ])
+
     await updateProgress(user.id, 1, score, 'competition')
     fetchRankings()
   }
 
-  const handleKeyDown = async (e) => {
+  const handleKeyDown = async e => {
     if (e.key !== 'Enter' || gameOver) return
+
     const command = input.trim()
     if (!command) return
 
@@ -114,8 +125,11 @@ export default function CompetitionPage() {
 
       setHistory(prev => [
         ...prev,
-        { type: 'success', text: `✅ 정답! +${gained}점${bonus > 0 ? ` (콤보 보너스 +${bonus})` : ''}` },
-        { type: 'success', text: `🔥 콤보: ${newCombo}` },
+        {
+          type: 'success',
+          text: `✅ 정답! +${gained}점${bonus > 0 ? ` (콤보 보너스 +${bonus})` : ''}`
+        },
+        { type: 'success', text: `🔥 콤보: ${newCombo}` }
       ])
 
       await updateProgress(user.id, 1, newScore, 'competition')
@@ -126,7 +140,11 @@ export default function CompetitionPage() {
       const newWrong = wrongCount + 1
       setWrongCount(newWrong)
       setCombo(0)
-      setHistory(prev => [...prev, { type: 'error', text: '❌ 틀렸습니다!' }])
+
+      setHistory(prev => [
+        ...prev,
+        { type: 'error', text: '❌ 틀렸습니다!' }
+      ])
     }
   }
 
@@ -143,155 +161,291 @@ export default function CompetitionPage() {
   }
 
   return (
-    <div className="competition-layout">
+    <div className="competition-page">
+      <header className="competition-header">
+        <button
+          className="competition-logo"
+          onClick={() => navigate('/mode')}
+        >
+          <span className="logo-prompt">›_</span>
+          CommandCraftTutorial
+        </button>
 
-      {/* 왼쪽 게임 영역 */}
-      <div className="game-area">
-
-        {/* 헤더 */}
-        <div className="game-header">
-          <span className="back-link" onClick={() => navigate('/mode')}>
-            ← CommandCraftTutorial
-          </span>
-          <div className="header-right">
-            <span className="header-score">🏆 {score}점</span>
-            <span className="header-combo">🔥 콤보 {combo}</span>
-            <span className="header-user">👤 {user.username}</span>
-            <button
-              className="exit-btn"
-              onClick={() => navigate('/mode')}
-              onMouseEnter={e => e.currentTarget.classList.add('exit-btn-hover')}
-              onMouseLeave={e => e.currentTarget.classList.remove('exit-btn-hover')}
-            >
-              ✕
-            </button>
-          </div>
-        </div>
-
-        {/* 미션 패널 */}
-        <div className="mission-panel">
-          <div className="mission-top">
-            <div className="mission-badges">
-              <span className={`difficulty-badge ${getDifficultyClass()}`}>
-                {stage?.difficulty}
-              </span>
-              <span className="category-label">
-                {stage?.category?.toUpperCase()}
-              </span>
-            </div>
-            <div className="timer" style={{ color: getTimerColor() }}>
-              ⏱️ {timer}s
-            </div>
+        <div className="competition-header-right">
+          <div className="header-pill">
+            <span className="header-pill-label">SCORE</span>
+            <span>{score}점</span>
           </div>
 
-          <h2 className="mission-title">랭크 미션 : 무작위 터미널</h2>
-          <p className="mission-desc">모든 난이도의 미션이 무작위로 타겟팅됩니다.</p>
-
-          <div className="mission-box">
-            <span className="mission-label">🎯 미션</span>
-            <span className="mission-text">{stage?.mission}</span>
+          <div className="header-pill">
+            <span className="header-pill-label">COMBO</span>
+            <span>{combo}</span>
           </div>
 
-          {/* 힌트 */}
-          <div className="hint-area">
-            <button className="hint-btn" onClick={() => setShowHint(!showHint)}>
-              💡 힌트 {showHint ? '숨기기' : '보기'}
-            </button>
-            {showHint && (
-              <div className="hint-box">💡 {stage?.hint}</div>
-            )}
+          <div className="header-user-pill">
+            👤 {user.username}
           </div>
-        </div>
 
-        {/* 터미널 */}
-        <div className="terminal" onClick={() => inputRef.current?.focus()}>
-          {history.map((line, i) => (
-            <div
-              key={i}
-              className={`terminal-line ${line.type === 'success' ? 'text-success' : line.type === 'error' ? 'text-error' : 'text-input'}`}
-            >
-              {line.type === 'input' ? (
-                <span>
-                  <span className="prompt-arrow">➜</span>
-                  <span className="prompt-tilde"> ~ </span>
-                  {line.text}
-                </span>
-              ) : (
-                <span>{line.text}</span>
-              )}
-            </div>
-          ))}
-
-          {!gameOver && (
-            <div className="input-row">
-              <span className="prompt-arrow">➜</span>
-              <span className="prompt-tilde"> ~ </span>
-              <input
-                ref={inputRef}
-                value={input}
-                onChange={e => setInput(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="terminal-input"
-                autoFocus
-              />
-            </div>
-          )}
-
-          {gameOver && (
-            <div className="gameover-box">
-              <p className="gameover-title">🎮 게임 오버</p>
-              <p className="gameover-score">최종 점수: {score}점</p>
-              <div className="gameover-buttons">
-                <button
-                  className="btn-restart"
-                  onClick={() => {
-                    setScore(0)
-                    setCombo(0)
-                    setGameOver(false)
-                    setHistory([])
-                    fetchRandomStage()
-                  }}
-                >
-                  🔄 다시 시작
-                </button>
-                <button className="btn-exit" onClick={() => navigate('/mode')}>
-                  나가기
-                </button>
-              </div>
-            </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-      </div>
-
-      {/* 오른쪽 랭킹 */}
-      <div className="ranking-panel">
-        <div className="ranking-header">🏆 실시간 랭킹</div>
-        <div className="ranking-list">
-          {rankings.map((player, i) => (
-            <div
-              key={player.id}
-              className={`ranking-item ${player.username === user.username ? 'ranking-item-me' : ''}`}
-            >
-              <span className={`ranking-medal rank-${i}`}>
-                {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
-              </span>
-              <span className={`ranking-name ${player.username === user.username ? 'ranking-name-me' : ''}`}>
-                {player.username}
-                {player.username === user.username && <span className="me-tag"> (나)</span>}
-              </span>
-              <span className="ranking-score">
-                {player.competition_score ?? player.score}점
-              </span>
-            </div>
-          ))}
-        </div>
-        <div className="ranking-footer">
-          <button className="btn-leaderboard" onClick={() => navigate('/leaderboard')}>
-            전체 랭킹 보기
+          <button
+            className="header-exit-button"
+            onClick={() => navigate('/mode')}
+          >
+            ✕
           </button>
         </div>
-      </div>
+      </header>
+
+      <main className="competition-main">
+        <div className="competition-content">
+          <section className="competition-top-grid">
+            <div className="mission-card">
+              <div className="card-kicker">› MISSION</div>
+
+              <h2 className="mission-title">
+                랭크 미션 : 무작위 터미널
+              </h2>
+
+              <p className="mission-desc">
+                모든 난이도의 미션이 무작위로 타겟팅됩니다.
+              </p>
+
+              <div className="mission-box">
+                <span className="mission-label">🎯 미션</span>
+                <span className="mission-text">{stage?.mission}</span>
+              </div>
+            </div>
+
+            <aside className="status-card">
+              <div className="status-row">
+                <span>난이도</span>
+                <span className={`difficulty-badge ${getDifficultyClass()}`}>
+                  {stage?.difficulty}
+                </span>
+              </div>
+
+              <div className="status-row">
+                <span>카테고리</span>
+                <span className="category-label">
+                  {stage?.category?.toUpperCase()}
+                </span>
+              </div>
+
+              <div className="status-row">
+                <span>남은 시간</span>
+                <span className="timer" style={{ color: getTimerColor() }}>
+                  {timer}s
+                </span>
+              </div>
+
+              <div className="status-row">
+                <span>오답 횟수</span>
+                <strong>{wrongCount}</strong>
+              </div>
+
+              <button
+                className="hint-btn"
+                onClick={() => setShowHint(!showHint)}
+              >
+                💡 힌트 {showHint ? '숨기기' : '보기'}
+              </button>
+
+            </aside>
+          </section>
+
+          <section className="competition-score-card">
+            <div className="score-stat">
+              <span>현재 점수</span>
+              <strong>{score}점</strong>
+            </div>
+
+            <div className="score-stat">
+              <span>콤보</span>
+              <strong>🔥 {combo}</strong>
+            </div>
+
+            <div className="score-stat">
+              <span>제한 시간</span>
+              <strong style={{ color: getTimerColor() }}>{timer}s</strong>
+            </div>
+          </section>
+
+          <section className="competition-bottom-grid">
+            <div
+              className="terminal-card"
+              onClick={() => inputRef.current?.focus()}
+            >
+              <div className="terminal-header">
+                <div className="terminal-title">
+                  <span className="terminal-dot" />
+                  TERMINAL
+                </div>
+                <button
+                  className="terminal-clear"
+                  onClick={e => {
+                    e.stopPropagation()
+                    setHistory([])
+                  }}
+                >
+                  CLEAR
+                </button>
+              </div>
+
+              <div className="terminal-tabs">
+                <span className="terminal-tab active">⚡ bash</span>
+                <span className="terminal-tab-actions">＋ ×</span>
+              </div>
+
+              <div className="terminal-body">
+                {history.length === 0 && (
+                  <div className="terminal-guide">
+                    <p>🚀 경쟁 모드에 오신 것을 환영합니다.</p>
+                    <p>💬 제한 시간 안에 명령어를 입력하세요.</p>
+                  </div>
+                )}
+
+                {history.map((line, i) => (
+                  <div
+                    key={i}
+                    className={`terminal-line ${
+                      line.type === 'success'
+                        ? 'text-success'
+                        : line.type === 'error'
+                          ? 'text-error'
+                          : 'text-input'
+                    }`}
+                  >
+                    {line.type === 'input' ? (
+                      <span>
+                        <span className="prompt-arrow">➜</span>
+                        <span className="prompt-tilde"> ~ </span>
+                        {line.text}
+                      </span>
+                    ) : (
+                      <span>{line.text}</span>
+                    )}
+                  </div>
+                ))}
+
+                {!gameOver && (
+                  <div className="input-row">
+                    <span className="prompt-arrow">➜</span>
+                    <span className="prompt-tilde">~</span>
+                    <input
+                      ref={inputRef}
+                      value={input}
+                      onChange={e => setInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className="terminal-input"
+                      autoFocus
+                    />
+                  </div>
+                )}
+
+                {gameOver && (
+                  <div className="gameover-box">
+                    <p className="gameover-title">🎮 게임 오버</p>
+                    <p className="gameover-score">최종 점수: {score}점</p>
+
+                    <div className="gameover-buttons">
+                      <button
+                        className="btn-restart"
+                        onClick={() => {
+                          setScore(0)
+                          setCombo(0)
+                          setGameOver(false)
+                          setHistory([])
+                          fetchRandomStage()
+                        }}
+                      >
+                        🔄 다시 시작
+                      </button>
+
+                      <button
+                        className="btn-exit"
+                        onClick={() => navigate('/mode')}
+                      >
+                        나가기
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={bottomRef} />
+              </div>
+            </div>
+
+            <aside className="ranking-card">
+              <div className="ranking-header">
+                🏆 실시간 랭킹
+              </div>
+
+              <div className="ranking-list">
+                {rankings.map((player, i) => (
+                  <div
+                    key={player.id}
+                    className={`ranking-item ${
+                      player.username === user.username ? 'ranking-item-me' : ''
+                    }`}
+                  >
+                    <span className={`ranking-medal rank-${i}`}>
+                      {i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i + 1}`}
+                    </span>
+
+                    <span className={`ranking-name ${
+                      player.username === user.username ? 'ranking-name-me' : ''
+                    }`}
+                    >
+                      {player.username}
+                      {player.username === user.username && (
+                        <span className="me-tag"> (나)</span>
+                      )}
+                    </span>
+
+                    <span className="ranking-score">
+                      {player.competition_score ?? player.score}점
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              <button
+                className="btn-leaderboard"
+                onClick={() => navigate('/leaderboard')}
+              >
+                전체 랭킹 보기
+              </button>
+            </aside>
+          </section>
+        </div>
+      </main>
+
+      {showHint && (
+        <div
+          className="hint-modal-backdrop"
+          onClick={() => setShowHint(false)}
+        >
+          <div
+            className="hint-modal"
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="hint-modal-header">
+              <span>💡 Hint</span>
+
+              <button
+                className="hint-modal-close"
+                onClick={() => setShowHint(false)}
+              >
+                ✕
+              </button>
+            </div>
+
+            <div className="hint-modal-body">
+              {stage?.hint}
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   )
 }
