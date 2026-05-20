@@ -1,72 +1,137 @@
 import { useNavigate } from 'react-router-dom'
-import './MinigamePage.css' // 아래에 추가해드릴 CSS와 매칭됩니다.
+import './MinigamePage.css'
 
 export default function MinigamePage() {
   const navigate = useNavigate()
+  const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+  const minigames = [
+    {
+      id: 'dungeon',
+      icon: '🏰',
+      title: '던전 탐험',
+      label: 'LIVE',
+      command: '--game dungeon',
+      description: '숨겨진 파일을 찾아\n키를 획득하여 탈출하세요',
+      color: 'CBA6F7',
+      locked: false,
+      path: '/dungeon',
+    },
+    {
+      id: 'typing',
+      icon: '⌨️',
+      title: '타이핑 러시',
+      label: 'COMING SOON',
+      command: '--game typing-rush',
+      description: '떨어지는 Git 명령어를\n빠르게 입력하여 파괴하세요',
+      color: 'F9E2AF',
+      locked: true,
+      path: null,
+    },
+  ]
+
+  const handleSelect = (game) => {
+    if (game.locked) return
+    navigate(game.path)
+  }
 
   return (
-    <div className="minigame-page">
-      <header className="mg-header">
-        <div className="mg-brand">
-          <span className="mg-prompt">&gt;_</span>
-          <span className="mg-logo">CommandCraftTutorial</span>
+    <div
+      className="mg-page-root"
+      style={{
+        '--mg-main-color': '#CBA6F7',
+      }}
+    >
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
         </div>
 
-        <div className="mg-header-right">
+        <div className="cct-header-right">
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
+          </div>
+
           <button
-            className="mg-icon-button mg-back-button"
+            className="cct-icon-button cct-back-button"
             onClick={() => navigate('/mode')}
-            aria-label="카테고리로 돌아가기"
+            aria-label="모드 선택으로 돌아가기"
           >
             ←
           </button>
         </div>
       </header>
 
-      {/* 메인 영역 */}
-      <main className="mg-main">
-        <section className="mg-hero">
-          <p className="mg-kicker">MINI GAMES</p>
-          <h1 className="mg-title">미니게임을 선택하세요</h1>
-          <p className="mg-subtitle">
-            Git 명령어를 활용한 다양한 미니게임으로 재미있게 실력을 키워보세요.
+      <main className="mg-page-main">
+        <section className="mg-page-hero">
+          <div className="mg-page-hero-icon">🎮</div>
+
+          <p className="mg-page-kicker">MINIGAME SELECT</p>
+
+          <h1 className="mg-page-title">
+            Mini Game Training
+          </h1>
+
+          <p className="mg-page-command">
+            $ start commandcraft --mode minigame
+          </p>
+
+          <p className="mg-page-subtitle">
+            미니게임을 선택하고 CLI 명령어를 게임처럼 연습하세요.
           </p>
         </section>
 
-        {/* 미니게임 리스트 */}
-        <section className="mg-list">
-          
-          {/* 1. 던전 게임 카드 */}
-          <div 
-            className="mg-card mg-card--active"
-            onClick={() => navigate('/dungeon')}
-          >
-            <div className="mg-card-badge">LIVE</div>
-            <div className="mg-card-icon">👾</div>
-            <div className="mg-card-content">
-              <h2 className="mg-card-title">던전 탐험</h2>
-              <p className="mg-card-desc">
-                숨겨진 파일을 찾아 키를 획득하여 탈출하세요
-              </p>
-            </div>
-            <button className="mg-card-btn">던전 입장 →</button>
-          </div>
+        <section className="mg-page-grid">
+          {minigames.map((game) => (
+            <article
+              key={game.id}
+              className={`mg-page-card ${game.locked ? 'mg-page-card-locked' : ''}`}
+              onClick={() => handleSelect(game)}
+              style={{
+                '--mg-card-color': `#${game.color}`,
+              }}
+            >
+              <div className="mg-page-card-header">
+                <div className="mg-page-card-command">
+                  <span className="mg-page-status-dot"></span>
+                  <span>$ start minigame {game.command}</span>
+                </div>
 
-          {/* 2. 준비 중인 미니게임 카드 (확장성 보여주기용) */}
-          <div className="mg-card mg-card--locked">
-            <div className="mg-card-badge mg-card-badge--coming">COMING SOON</div>
-            <div className="mg-card-icon">⌨️</div>
-            <div className="mg-card-content">
-              <h2 className="mg-card-title">타이핑 러시 (준비 중)</h2>
-              <p className="mg-card-desc">
-                화면 아래로 떨어지는 Git 명령어들을 텍스트가 땅에 닿기 전에 빠르게 타이핑하여 파괴하는 스피드 게임입니다.
-              </p>
-            </div>
-            <button className="mg-card-btn" disabled>잠김</button>
-          </div>
+                <span className="mg-page-label">
+                  {game.label}
+                </span>
+              </div>
 
+              <div className="mg-page-card-body">
+                <div className="mg-page-card-icon">
+                  {game.icon}
+                </div>
+
+                <h2 className="mg-page-card-title">
+                  {game.title}
+                </h2>
+
+                <p className="mg-page-card-description">
+                  {game.description}
+                </p>
+              </div>
+
+              <button
+                className="mg-page-select-button"
+                disabled={game.locked}
+              >
+                {game.locked ? '잠김' : '선택 →'}
+              </button>
+            </article>
+          ))}
         </section>
       </main>
+
+      <footer className="mg-page-footer">
+        💡 미니게임은 명령어 학습을 더 재미있게 만드는 실습 모드입니다.
+      </footer>
     </div>
   )
 }
