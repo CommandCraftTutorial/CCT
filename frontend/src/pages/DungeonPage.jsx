@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { getDungeonStage, sendDungeonCommand } from '../services/api'
+import './DungeonPage.css'
 
 export default function DungeonPage() {
   const [stage, setStage] = useState(null)
@@ -9,6 +10,7 @@ export default function DungeonPage() {
   const [input, setInput] = useState('')
   const [currentPath, setCurrentPath] = useState('/')
   const [cleared, setCleared] = useState(false)
+
   const bottomRef = useRef(null)
   const inputRef = useRef(null)
   const navigate = useNavigate()
@@ -33,6 +35,7 @@ export default function DungeonPage() {
 
   const handleKeyDown = async (e) => {
     if (e.key !== 'Enter') return
+
     const command = input.trim()
     if (!command) return
 
@@ -41,6 +44,7 @@ export default function DungeonPage() {
 
     try {
       const { data } = await sendDungeonCommand(stageId, command, user.id)
+
       setCurrentPath(data.currentPath)
       setHistory(prev => [...prev, { type: 'output', text: data.output }])
 
@@ -49,138 +53,112 @@ export default function DungeonPage() {
         setHistory(prev => [
           ...prev,
           { type: 'success', text: '🎉 던전 스테이지 클리어!' },
-          { type: 'success', text: `다음 스테이지로 이동합니다...` },
+          { type: 'success', text: '다음 스테이지로 이동합니다...' },
         ])
+
         setTimeout(() => {
           if (data.nextStageId) {
             setStageId(data.nextStageId)
           } else {
-            setHistory(prev => [...prev, { type: 'success', text: '🏆 모든 던전을 클리어했습니다!' }])
+            setHistory(prev => [
+              ...prev,
+              { type: 'success', text: '🏆 모든 던전을 클리어했습니다!' },
+            ])
           }
         }, 2000)
       }
     } catch {
-      setHistory(prev => [...prev, { type: 'error', text: '❌ 서버 오류가 발생했습니다.' }])
+      setHistory(prev => [
+        ...prev,
+        { type: 'error', text: '❌ 서버 오류가 발생했습니다.' },
+      ])
     }
   }
 
-  const getColor = (type) => {
-    if (type === 'story') return '#f9e2af'
-    if (type === 'input') return '#cdd6f4'
-    if (type === 'output') return '#a6e3a1'
-    if (type === 'success') return '#a6e3a1'
-    if (type === 'error') return '#f38ba8'
-    return '#6c7086'
-  }
-
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      height: '100vh',
-      background: '#0f0f17',
-      color: '#cdd6f4',
-      fontFamily: 'Menlo, Monaco, monospace',
-    }}>
+    <div className="dungeon-page">
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
+        </div>
 
-      {/* 헤더 */}
-      <div style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        padding: '12px 24px',
-        background: '#13131f',
-        borderBottom: '1px solid #2a2a3d',
-      }}>
-        <span style={{ fontSize: '16px', fontWeight: 'bold', color: '#f9e2af' }}>
-          🏰 파일 던전
-        </span>
-        <div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-          <span style={{ color: '#f9e2af', fontSize: '13px' }}>
-            Stage {stageId} - {stage?.title}
-          </span>
+        <div className="cct-header-right">
+          <div className="cct-pill dungeon-stage-pill">
+            <span>🏰</span>
+            <span>Stage {stageId} - {stage?.title || 'Loading...'}</span>
+          </div>
+
           <button
+            className="cct-icon-button cct-back-button"
             onClick={() => navigate('/minigames')}
-            style={{
-              padding: '6px 12px',
-              borderRadius: '6px',
-              border: '1px solid #f38ba8',
-              background: 'transparent',
-              color: '#f38ba8',
-              fontSize: '12px',
-              cursor: 'pointer',
-              fontFamily: 'Menlo, Monaco, monospace',
-            }}
+            aria-label="미니게임 페이지로 돌아가기"
           >
-            ✕ 나가기
+            ←
           </button>
         </div>
-      </div>
+      </header>
 
-      {/* 터미널 */}
-      <div
-        onClick={() => inputRef.current?.focus()}
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          padding: '20px 24px',
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '4px',
-          cursor: 'text',
-        }}
-      >
-        {history.map((line, i) => (
-          <div key={i} style={{ color: getColor(line.type), lineHeight: '1.8' }}>
-            {line.type === 'input' ? (
-              <span>
-                <span style={{ color: '#a6e3a1' }}>➜</span>
-                <span style={{ color: '#89b4fa', margin: '0 8px' }}>{line.path}</span>
-                {line.text}
-              </span>
-            ) : (
-              <span style={{ whiteSpace: 'pre-wrap' }}>{line.text}</span>
+      <main className="dungeon-main">
+        <section className="dungeon-panel">
+          <div className="dungeon-panel-header">
+            <div>
+              <p className="dungeon-kicker">FILE DUNGEON</p>
+              <h1 className="dungeon-title">
+                🏰 파일 던전
+              </h1>
+            </div>
+
+            <div className="dungeon-command-chip">
+              $ explore dungeon --stage {stageId}
+            </div>
+          </div>
+
+          <div
+            className="dungeon-terminal"
+            onClick={() => inputRef.current?.focus()}
+          >
+            {history.map((line, i) => (
+              <div
+                key={i}
+                className={`dungeon-line dungeon-line-${line.type}`}
+              >
+                {line.type === 'input' ? (
+                  <>
+                    <span className="dungeon-prompt">➜</span>
+                    <span className="dungeon-path">{line.path}</span>
+                    <span>{line.text}</span>
+                  </>
+                ) : (
+                  <span>{line.text}</span>
+                )}
+              </div>
+            ))}
+
+            {!cleared && (
+              <div className="dungeon-input-line">
+                <span className="dungeon-prompt">➜</span>
+                <span className="dungeon-path">{currentPath}</span>
+                <input
+                  ref={inputRef}
+                  value={input}
+                  onChange={e => setInput(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="dungeon-input"
+                  autoFocus
+                />
+              </div>
             )}
-          </div>
-        ))}
 
-        {/* 입력창 */}
-        {!cleared && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '8px' }}>
-            <span style={{ color: '#a6e3a1' }}>➜</span>
-            <span style={{ color: '#89b4fa' }}>{currentPath}</span>
-            <input
-              ref={inputRef}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              style={{
-                flex: 1,
-                background: 'transparent',
-                border: 'none',
-                outline: 'none',
-                color: '#cdd6f4',
-                fontFamily: 'Menlo, Monaco, monospace',
-                fontSize: '14px',
-                caretColor: '#f5c2e7',
-              }}
-              autoFocus
-            />
+            <div ref={bottomRef} />
           </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
+        </section>
+      </main>
 
-      {/* 힌트 */}
-      <div style={{
-        padding: '12px 24px',
-        background: '#13131f',
-        borderTop: '1px solid #2a2a3d',
-        fontSize: '12px',
-        color: '#6c7086',
-      }}>
-        💡 힌트: {stage?.hint}
-      </div>
+      <footer className="dungeon-footer">
+        <span>💡 힌트:</span>
+        <span>{stage?.hint}</span>
+      </footer>
     </div>
   )
 }

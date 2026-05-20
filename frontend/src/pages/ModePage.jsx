@@ -52,7 +52,7 @@ export default function ModePage() {
               <p>Git · Linux · GDB · PDB 명령어 학습</p>
             </div>
 
-            <button className="mode-action-button">🎮 학습 시작하기</button>
+            <button className="mode-action-button">📚 학습 시작하기</button>
           </article>
 
           <article
@@ -78,7 +78,7 @@ export default function ModePage() {
               <p>랜덤 출제 · 실시간 랭킹 · 콤보 보너스</p>
             </div>
 
-            <button className="mode-action-button">🏆 경쟁 시작하기</button>
+            <button className="mode-action-button">⚔️ 경쟁 시작하기</button>
           </article>
         </section>
 
@@ -95,7 +95,7 @@ export default function ModePage() {
 
             <div className="minigame-left">
               <div className="minigame-body">
-                <div className="mode-icon-box">🏰</div>
+                <div className="mode-icon-box">🎮</div>
                 <div>
                   <h2>Mini Game</h2>
                   <p>
