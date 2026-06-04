@@ -5,6 +5,7 @@ class VirtualPdbEngine {
 
   reset() {
     this.running = false
+    this.program = null
     this.currentLine = 1
     this.breakpoints = []
     this.callStack = ['<module>']
@@ -27,6 +28,24 @@ class VirtualPdbEngine {
     const cmd = base
 
     switch (cmd) {
+
+      case 'python': {
+        const mIdx = args.indexOf('-m')
+        if (mIdx !== -1 && args[mIdx + 1] === 'pdb') {
+          const script = args[mIdx + 2]
+          if (!script) return { output: 'Usage: python -m pdb <script.py>', success: false }
+          this.program = script
+          this.running = true
+          this.currentLine = 1
+          return {
+            output: `> ${script}(1)<module>()\n-> ${this.sourceCode[0]?.split(': ')[1] || ''}\n(Pdb)`,
+            success: true,
+            stateChange: { running: true, program: script }
+          }
+        }
+        return { output: 'Usage: python -m pdb <script.py>', success: false }
+      }
+
       case 'l':
       case 'list': {
         const start = Math.max(0, this.currentLine - 2)
@@ -165,6 +184,8 @@ class VirtualPdbEngine {
 
   getState() {
     return {
+      running: this.running,
+      program: this.program,
       currentLine: this.currentLine,
       breakpoints: this.breakpoints,
       variables: this.variables,
