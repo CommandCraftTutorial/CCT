@@ -42,21 +42,24 @@ function parseCommand(input) {
     } else if (token.startsWith('-') && token.length === 2) {
       // -m "message" 같은 단일 옵션
       const key = token.slice(1)
-      if (tokens[i + 1] && !tokens[i + 1].startsWith('-')) {
+
+      const valueOptions = ['m', 'message', 'u', 'o', 'f', 'C']
+      if (valueOptions.includes(key) && tokens[i + 1] && !tokens[i + 1].startsWith('-')) {
         parsed.options[key] = tokens[i + 1].replace(/^["']|["']$/g, '')
         i++
       } else {
+      // ✅ 나머지는 전부 플래그 (b, d, v, a 등)
         parsed.flags.push(key)
+        }
+      } else if (token.startsWith('-') && token.length > 2) {
+        // -al 같은 복합 플래그
+        token.slice(1).split('').forEach(f => parsed.flags.push(f))
+      } else {
+        parsed.args.push(token.replace(/^["']|["']$/g, ''))
       }
-    } else if (token.startsWith('-') && token.length > 2) {
-      // -al 같은 복합 플래그
-      token.slice(1).split('').forEach(f => parsed.flags.push(f))
-    } else {
-      parsed.args.push(token.replace(/^["']|["']$/g, ''))
-    }
 
-    i++
-  }
+      i++
+      }
 
   return parsed
 }

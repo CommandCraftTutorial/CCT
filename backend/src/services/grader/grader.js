@@ -1,85 +1,62 @@
-function gradeCommand(input, stage) {
-  // 1. 입력값이 없으면 바로 탈락
-  if (!input) return false  // command → input 으로 수정
+// services/grader/grader.js
 
-  // 2. 앞뒤 공백 제거
+function gradeCommand(input, stage) {
+  if (!input) return false
   const trimmed = input.trim()
   if (!trimmed) return false
 
-  // 3. 정규표현식 채점
-  // 3. 정규표현식 채점
   if (stage.answer_regex) {
     try {
-      // 만약 터미널 에러 메시지가 인자로 섞여 들어왔다면 채점하지 않고 바로 탈락
-      if (trimmed.includes('command not found')) return false;
-
-      // DB 정규식을 가져옵니다.
-      const regexStr = stage.answer_regex.trim();
-      const regex = new RegExp(regexStr);
-      
-      // [핵심] regex.test()는 중간에 매칭되어도 true를 주므로, 
-      // 강제로 전체 문장이 일치하는지 한 번 더 검증하는 안전장치를 둡니다.
-      const match = trimmed.match(regex);
-      if (match && match[0] === trimmed) {
-        return true;
-      }
-      
-      return false;
+      if (trimmed.includes('command not found')) return false
+      const regex = new RegExp(stage.answer_regex.trim())
+      const match = trimmed.match(regex)
+      return !!(match && match[0] === trimmed)
     } catch (e) {
-      console.error('정규식 패턴 오류:', e);
-      return false;
+      console.error('정규식 패턴 오류:', e)
+      return false
     }
   }
 
-  // 4. 일반 정답 채점
   if (stage.answer) {
-    const normalizedInput = trimmed.replace(/\s+/g, ' ')
-    const normalizedAnswer = stage.answer.trim().replace(/\s+/g, ' ')
-    return normalizedInput === normalizedAnswer
+    return trimmed.replace(/\s+/g, ' ') === stage.answer.trim().replace(/\s+/g, ' ')
   }
 
   return false
 }
 
-// 학습 모드 채점 (힌트 차감 없음)
-function gradeStudy(input, stage) {
-  return {
-    passed: gradeCommand(input, stage),
-    mode: 'study'
+// ✅ 심화 시나리오형 채점
+function gradeState(state, stage) {
+  if (!stage.clearCondition) {
+    return { passed: false, checks: [] }
   }
+
+  const passed = stage.clearCondition(state)
+
+  const checks = (stage.checks ?? []).map(c => ({
+    label: c.label,
+    passed: c.check(state),
+    hint: c.hint
+  }))
+
+  return { passed, checks }
 }
 
-// 경쟁 모드 채점 (콤보, 시간 보너스 계산)
+function gradeStudy(input, stage) {
+  return { passed: gradeCommand(input, stage), mode: 'study' }
+}
+
 function gradeCompetition(input, stage, combo = 0, timeLeft = 30) {
   const passed = gradeCommand(input, stage)
+  if (!passed) return { passed: false, score: 0, combo: 0, mode: 'competition' }
 
-  if (!passed) {
-    return {
-      passed: false,
-      score: 0,
-      combo: 0,
-      mode: 'competition'
-    }
-  }
-
-  // 기본 점수
   let score = 100
-
-  // 콤보 보너스 (3콤보 이상부터 +50)
   const newCombo = combo + 1
   if (newCombo >= 3) score += 50
   if (newCombo >= 5) score += 50
   if (newCombo >= 10) score += 100
-
-  // 시간 보너스 (남은 시간 * 2)
   score += timeLeft * 2
 
-  return {
-    passed: true,
-    score,
-    combo: newCombo,
-    mode: 'competition'
-  }
+  return { passed: true, score, combo: newCombo, mode: 'competition' }
 }
 
-module.exports = { gradeCommand, gradeStudy, gradeCompetition }
+module.exports = { gradeCommand, gradeState, gradeStudy, gradeCompetition }

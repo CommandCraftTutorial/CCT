@@ -1,10 +1,17 @@
 class VirtualFileSystem {
-  constructor() {
+  constructor(initialFiles = []) {
+    this.initialFiles = initialFiles
     this.reset()
   }
 
   reset() {
     this.currentPath = '/home/user'
+
+    const userFiles = {}
+    this.initialFiles.forEach(filename => {
+      userFiles[filename] = { type: 'file', content: '' }
+    })
+
     this.structure = {
       '/': {
         type: 'dir',
@@ -14,11 +21,7 @@ class VirtualFileSystem {
             children: {
               'user': {
                 type: 'dir',
-                children: {
-                  'README.md': { type: 'file', content: '# Project\nHello World' },
-                  'app.js': { type: 'file', content: 'console.log("hello")' },
-                  'secret.env': { type: 'file', content: 'SECRET=1234' },
-                }
+                children:  userFiles
               }
             }
           },

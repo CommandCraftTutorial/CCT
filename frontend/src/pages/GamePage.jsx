@@ -10,6 +10,8 @@ import {
 } from '../services/stateStageApi'
 import './GamePage.css'
 
+// ✅ stateStages.js에 있는 시나리오형 스테이지 id 목록
+const SCENARIO_STAGE_IDS = [1090, 1091, 1092, 1093, 1094, 1095]
 
 export default function GamePage() {
   const [stage, setStage] = useState(null)
@@ -28,17 +30,15 @@ export default function GamePage() {
   const gameConfig = JSON.parse(
     localStorage.getItem('gameConfig') || '{"category":"git","difficulty":"기초"}'
   )
-  const isStateMode = gameConfig.category === 'git'
 
-  // 설명에서 정답 명령어를 찾아 가려주는 함수
+  // ✅ stageId가 SCENARIO_STAGE_IDS에 있을 때만 시나리오형
+  const isScenarioMode = SCENARIO_STAGE_IDS.includes(String(stageId))
+
   const filterDescription = (description, answer) => {
     if (!description || !answer) return description;
-  
-    // 정답 명령어(예: git init)와 일치하는 단어를 대소문자 구분 없이 찾아 "____"로 변경
     const regex = new RegExp(answer, 'gi');
     return description.replace(regex, '🔒 [COMMAND]');
   };
-
 
   useEffect(() => {
     if (!user.id) {
@@ -48,7 +48,6 @@ export default function GamePage() {
 
     const fetchStages = async () => {
       try {
-        // 🚨 Git이든 아니든 유별나게 구별하지 말고 모두 똑같은 정상적인 백엔드 라우터를 타게 만듭니다!
         const res = await getStagesByCategory(
           gameConfig.category,
           gameConfig.difficulty
@@ -60,7 +59,6 @@ export default function GamePage() {
           setStageIds(ids)
           setStageId(ids[currentIndex])
         } else {
-          // 데이터가 아예 없을 때를 대비한 안전장치
           setStageIds([])
           setStageId(null)
         }
@@ -70,23 +68,21 @@ export default function GamePage() {
     }
 
     fetchStages()
-  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id]) // dependency에서 isStateMode 제거
+  }, [gameConfig.category, gameConfig.difficulty, navigate, user.id])
 
   useEffect(() => {
     if (!stageId) return
 
     const fetchStage = async () => {
       try {
-        // 1. Git이든 아니든 데이터는 무조건 404 안 나는 안전한 getStage로 가져옵니다!
         const res = await getStage(stageId)
         const stageData = res.data
 
-        
-        // 2. 만약 Git 모드라면 백엔드 가상 엔진 상태를 리셋해주는 함수만 따로 실행해 줍니다.
-        if (isStateMode && typeof resetStateStage === 'function') {
-          await resetStateStage(stageId, user.id || user.username || 'guest','git')
+        // ✅ 시나리오형 스테이지일 때만 가상 엔진 리셋
+        if (SCENARIO_STAGE_IDS.includes(String(stageId)) && typeof resetStateStage === 'function') {
+          await resetStateStage(stageId, user.id || user.username || 'guest', gameConfig.category)
         }
-        
+
         setStage(stageData)
         setShowHint(false)
         setWrongCount(0)
@@ -96,21 +92,29 @@ export default function GamePage() {
     }
 
     fetchStage()
-  }, [stageId, isStateMode, user.id, user.username])
+  }, [stageId, user.id, user.username])
 
   const handleCommand = async (command, term) => {
     try {
-      const data = isStateMode
+      // ✅ 시나리오형이면 state-submit, 아니면 기존 submit
+      const data = SCENARIO_STAGE_IDS.includes(String(stageId))
         ? await submitStateCommand(
             stageId,
             user.id || user.username || 'guest',
             command,
-            'git'
+            gameConfig.category
           )
         : (await submitCommand(stageId, command, user.id)).data
-      
+
       if (data.output || data.message) {
         term.writeln(data.output || data.message)
+      }
+
+      // ✅ 시나리오형 체크리스트 출력
+      if (data.checks && data.checks.length > 0) {
+        data.checks.forEach(c => {
+          term.writeln(`${c.passed ? '✅' : '⬜'} ${c.label}${!c.passed && c.hint ? ` → ${c.hint}` : ''}`)
+        })
       }
 
       if (data.passed) {
@@ -126,7 +130,6 @@ export default function GamePage() {
 
         if (!isLastStage) {
           term.writeln('🎉 성공! 다음 스테이지로 이동합니다...')
-
           setTimeout(() => {
             const nextIndex = currentIndex + 1
             setCurrentIndex(nextIndex)
@@ -134,7 +137,6 @@ export default function GamePage() {
           }, 1500)
         } else {
           term.writeln('🏆 모든 스테이지를 완료했습니다!')
-
           setTimeout(() => {
             navigate('/clear', {
               state: {
@@ -147,7 +149,7 @@ export default function GamePage() {
       } else {
         term.writeln('❌ 틀렸습니다. 힌트 버튼을 눌러보세요!')
         if (data.feedback) {
-          term.writeln(`💡 ${data.feedback}`) 
+          term.writeln(`💡 ${data.feedback}`)
         }
         setWrongCount(prev => prev + 1)
 
@@ -174,13 +176,10 @@ export default function GamePage() {
                 ✕
               </button>
             </div>
-
             <div className="hint-divider" />
-
             <p className="hint-content">
               {stage?.hint || stage?.examples?.join(' → ') || '힌트가 없습니다.'}
             </p>
-
             <button className="hint-confirm-button" onClick={() => setShowHint(false)}>
               확인
             </button>
@@ -193,7 +192,6 @@ export default function GamePage() {
           <span className="cct-prompt">&gt;_</span>
           <span className="cct-logo">CommandCraftTutorial</span>
         </div>
-
         <div className="cct-header-right">
           <div className="cct-hud-pill">
             <span className="cct-hud-label">STAGE</span>
@@ -201,16 +199,13 @@ export default function GamePage() {
               {String(currentIndex + 1).padStart(2, '0')} / {stageIds.length}
             </span>
           </div>
-
           <div className="cct-pill">
             <span>👤</span>
             <span>{user.username || 'player01'}</span>
           </div>
-
           <button className="cct-icon-button" onClick={() => navigate('/stages')}>
             📋
           </button>
-
           <button className="cct-icon-button" onClick={() => navigate('/category')}>
             ✕
           </button>
@@ -221,17 +216,12 @@ export default function GamePage() {
         <section className="mission-grid">
           <div className="mission-card">
             <div className="section-label">› MISSION</div>
-
-            {/* 1. 타이틀에서 정답 숨기기 */}
             <h1 className="mission-title">
               {'새로운 미션 달성하기'}
             </h1>
-
             <p className="mission-description">
               {'제시된 미션을 읽고 터미널에 올바른 명령어를 입력하여 저장소를 관리하세요.'}
             </p>
-
-            {/* 2. 미션 정답 박스 제어 */}
             <div className="mission-command">
               <span className="mission-command-label">🎯 미션</span>
               <code>{stage?.mission}</code>
@@ -245,11 +235,9 @@ export default function GamePage() {
                 {stage?.difficulty}
               </span>
             </div>
-
             <button className="hint-button" onClick={() => setShowHint(true)}>
               💡 힌트 보기
             </button>
-
             <div className="side-row vertical">
               <span className="side-label">오답 횟수</span>
               <span className="wrong-count">{wrongCount} / 3</span>
@@ -259,14 +247,9 @@ export default function GamePage() {
 
         <section className="progress-card">
           <span className="progress-title">진행률</span>
-
           <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${progressRate}%` }}
-            />
+            <div className="progress-fill" style={{ width: `${progressRate}%` }} />
           </div>
-
           <span className="progress-percent">
             {Math.round(progressRate)}% ({currentIndex + 1} / {stageIds.length || 1})
           </span>
@@ -278,7 +261,6 @@ export default function GamePage() {
             <span className="terminal-title">TERMINAL</span>
             <button className="terminal-clear-button">CLEAR</button>
           </div>
-
           <div className="terminal-wrapper">
             <Terminal onCommand={handleCommand} />
           </div>
