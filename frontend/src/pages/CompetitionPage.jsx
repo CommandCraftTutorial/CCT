@@ -162,34 +162,29 @@ export default function CompetitionPage() {
 
   return (
     <div className="competition-page">
-      <header className="competition-header">
-        <button
-          className="competition-logo"
-          onClick={() => navigate('/mode')}
-        >
-          <span className="logo-prompt">›_</span>
-          CommandCraftTutorial
-        </button>
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
+        </div>
 
-        <div className="competition-header-right">
-          <div className="header-pill">
-            <span className="header-pill-label">SCORE</span>
-            <span>{score}점</span>
+        <div className="cct-header-right">
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">SCORE</span>
+            <span className="cct-hud-value">{score}점</span>
           </div>
 
-          <div className="header-pill">
-            <span className="header-pill-label">COMBO</span>
-            <span>{combo}</span>
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">COMBO</span>
+            <span className="cct-hud-value">{combo}</span>
           </div>
 
-          <div className="header-user-pill">
-            👤 {user.username}
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
           </div>
 
-          <button
-            className="header-exit-button"
-            onClick={() => navigate('/mode')}
-          >
+          <button className="cct-icon-button" onClick={() => navigate('/mode')}>
             ✕
           </button>
         </div>
