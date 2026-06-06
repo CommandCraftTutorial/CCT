@@ -37,19 +37,24 @@ export default function LeaderboardPage() {
 
   return (
     <div className="leaderboard-page">
-      <header className="leaderboard-header">
-        <button
-          className="leaderboard-back-brand"
-          onClick={() => navigate('/category')}
-        >
-          <span className="leaderboard-back-arrow">←</span>
-          <span className="leaderboard-prompt">&gt;_</span>
-          <span className="leaderboard-logo">CommandCraftTutorial</span>
-        </button>
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
+      </div>
 
-        <div className="leaderboard-user-box">
-          <span className="leaderboard-user-icon">👤</span>
-          <span>{user.username || 'player01'}</span>
+        <div className="cct-header-right">
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
+          </div>
+
+          <button
+            className="cct-icon-button cct-back-button"
+            onClick={() => navigate('/mode')}
+          >
+            ←
+          </button>
         </div>
       </header>
 
