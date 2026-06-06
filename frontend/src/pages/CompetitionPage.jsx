@@ -32,10 +32,19 @@ export default function CompetitionPage() {
     try {
       gameOverCalledRef.current = false
       const res = await api.get('/stages/random')
-      setStage(res.data)
+      const nextStage = res.data
+
+      setStage(nextStage)
       setTimer(30)
       setShowHint(false)
       setWrongCount(0)
+
+      if (nextStage?.difficulty === '심화') {
+        await api.post(`/stages/${nextStage.id}/state-reset`, {
+          userId: user.id,
+          category: nextStage.category
+        })
+      }
     } catch (err) {
       console.error(err)
     }
@@ -108,15 +117,15 @@ export default function CompetitionPage() {
       userId: user.id,
       mode: 'competition',
       combo,
-      timeLeft: timer
+      timeLeft: timer,
+      wrongCount
     })
 
-    const { passed } = res.data
+    const { passed, score: gainedScore, combo: nextCombo } = res.data
 
     if (passed) {
-      const newCombo = combo + 1
-      const bonus = newCombo >= 3 ? 50 : 0
-      const gained = 100 + bonus
+      const newCombo = nextCombo ?? combo + 1
+      const gained = gainedScore ?? 100
       const newScore = score + gained
 
       setCombo(newCombo)
@@ -127,7 +136,7 @@ export default function CompetitionPage() {
         ...prev,
         {
           type: 'success',
-          text: `✅ 정답! +${gained}점${bonus > 0 ? ` (콤보 보너스 +${bonus})` : ''}`
+          text: `✅ 정답! +${gained}점`
         },
         { type: 'success', text: `🔥 콤보: ${newCombo}` }
       ])

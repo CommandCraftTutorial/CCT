@@ -99,7 +99,7 @@ router.get('/category/:categoryName', async (req, res) => {
 // 7. 기존 명령어 채점
 router.post('/:id/submit', async (req, res) => {
   try {
-    const { command, userId, mode, combo, timeLeft } = req.body
+    const { command, userId, mode, combo, timeLeft, wrongCount } = req.body
     console.log(`[제출 데이터] stageId: ${req.params.id}, command: ${command}, userId: ${userId}`)
 
     const stage = await db('stages').where({ id: req.params.id }).first()
@@ -108,19 +108,48 @@ router.post('/:id/submit', async (req, res) => {
       return res.status(404).json({ error: `Stage ${req.params.id} not found` })
     }
 
-    const engineResult = executeCommand(userId, command, stage.category)
-    let passed = false
+    const stageId = req.params.id
+    const jsStage = getStateStageById(stageId)
 
-    if (stage.goal) {
-      passed = checkGoal(userId, stage) === true
+    const engineResult = executeCommand(userId, command, stage.category, stageId)
+
+    let passed = false
+    let checks = []
+    let feedback = null
+
+    if (jsStage) {
+      const stateResult = gradeState(engineResult.state, jsStage)
+      passed = stateResult.passed
+      checks = stateResult.checks
+      feedback = engineResult.feedback ?? null
+    } else if (stage.goal) {
+      const goalResult = checkGoal(userId, stage, stageId)
+      passed = goalResult === true
+      feedback = typeof goalResult === 'object' ? goalResult.feedback : null
     } else {
       passed = gradeCommand(command, stage)
+      feedback = !passed && engineResult.feedback ? engineResult.feedback : null
     }
 
-    const feedback = !passed && engineResult.feedback ? engineResult.feedback : null
+    let scoreResult = null
+    if (mode === 'competition') {
+      scoreResult = gradeCompetition(
+        command,
+        stage,
+        Number(combo) || 0,
+        Number(timeLeft) || 0,
+        Number(wrongCount) || 0,
+        passed
+      )
+    }
 
     res.json({
       passed,
+      checks,
+      score: passed ? scoreResult?.score ?? 0 : 0,
+      combo: passed ? scoreResult?.combo ?? 0 : 0,
+      wrongCount: Number(wrongCount) || 0,
+      wrongPenalty: scoreResult?.wrongPenalty ?? 0,
       output: engineResult.output,
       feedback,
       state: engineResult.state,
