@@ -45,8 +45,8 @@ function gradeStudy(input, stage) {
   return { passed: gradeCommand(input, stage), mode: 'study' }
 }
 
-function gradeCompetition(input, stage, combo = 0, timeLeft = 30) {
-  const passed = gradeCommand(input, stage)
+function gradeCompetition(input, stage, combo = 0, timeLeft = 30, wrongCount = 0, passedOverride = null) {
+  const passed = passedOverride ?? gradeCommand(input, stage)
   if (!passed) return { passed: false, score: 0, combo: 0, mode: 'competition' }
 
   let score = 100
@@ -56,7 +56,17 @@ function gradeCompetition(input, stage, combo = 0, timeLeft = 30) {
   if (newCombo >= 10) score += 100
   score += timeLeft * 2
 
-  return { passed: true, score, combo: newCombo, mode: 'competition' }
+  const wrongPenalty = wrongCount * 10
+  score = Math.max(0, score - wrongPenalty)
+
+  return {
+    passed: true,
+    score,
+    combo: newCombo,
+    wrongCount,
+    wrongPenalty,
+    mode: 'competition'
+  }
 }
 
 module.exports = { gradeCommand, gradeState, gradeStudy, gradeCompetition }
