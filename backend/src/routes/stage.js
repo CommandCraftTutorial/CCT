@@ -14,11 +14,22 @@ const resetSession = engineManager.resetSession || (() => {})
 router.get('/', async (req, res) => {
   try {
     const { category, difficulty } = req.query
-    const stages = await db('stages')
-      .where({ category, difficulty })
-      .orderBy('id', 'asc')
-    res.json(stages)
+
+    let query = db('stages').select('*')
+
+    if (category) {
+      query = query.where('category', category)
+    }
+
+    if (difficulty) {
+      query = query.where('difficulty', decodeURIComponent(difficulty))
+    }
+
+    const stages = await query.orderBy('id', 'asc')
+
+    res.json(stages || [])
   } catch (err) {
+    console.error('[스테이지 전체 조회 에러]:', err.message)
     res.status(500).json({ error: err.message })
   }
 })

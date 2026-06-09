@@ -100,7 +100,11 @@ export default function StageListPage() {
 
                     <span
                       className={`stage-difficulty-badge ${
-                        stage.difficulty === '기초' ? 'basic' : 'normal'
+                        stage.difficulty === '기초'
+                          ? 'basic'
+                          : stage.difficulty === '심화'
+                            ? 'hard'
+                            : 'normal'
                       }`}
                     >
                       {stage.difficulty}
