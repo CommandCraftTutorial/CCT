@@ -264,6 +264,8 @@
   font-size: 15px;
   font-family: Menlo, Monaco, Consolas, monospace;
   text-shadow: 0 0 10px rgba(166, 227, 161, 0.24);
+  word-break: break-word;   /* 추가 */
+  white-space: pre-wrap;    /* 추가 */
 }
 
 /* =========================

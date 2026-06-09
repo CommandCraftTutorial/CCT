@@ -108,7 +108,7 @@ router.post('/:id/submit', async (req, res) => {
       return res.status(404).json({ error: `Stage ${req.params.id} not found` })
     }
 
-    const engineResult = executeCommand(userId, command, stage.category)
+    const engineResult = executeCommand(userId, command, stage.category, req.params.id)
     let passed = false
 
     if (stage.goal) {
@@ -141,7 +141,7 @@ router.post('/:id/state-reset', async (req, res) => {
 
     const stage = getStateStageById(stageId)
     const initialFiles = stage?.initialFiles ?? []
-    resetSession(userId, stageId, initialFiles)
+    resetSession(userId, stageId, initialFiles, category)
 
     res.json({ success: true, message: '가상 저장소가 초기화되었습니다.' })
   } catch (err) {

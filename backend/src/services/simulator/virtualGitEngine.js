@@ -25,13 +25,13 @@ class VirtualGitEngine {
     if (!subcommand) return { output: 'git: missing subcommand', success: false }
 
     // git init 없이 다른 명령어 실행 시
-    if (!this.initialized && subcommand !== 'init' && subcommand !== '--version' && subcommand !== 'config') {
+    /*if (!this.initialized && subcommand !== 'init' && subcommand !== '--version' && subcommand !== 'config') {
       return {
         output: 'fatal: not a git repository (or any of the parent directories): .git',
         success: false,
         feedback: 'Git 저장소를 먼저 초기화해야 합니다. git init 을 실행하세요.'
       }
-    }
+    }*/
 
     switch (subcommand) {
       case '--version':
@@ -254,11 +254,8 @@ class VirtualGitEngine {
 
       case 'reset': {
         if (flags.includes('soft') || options['soft'] !== undefined) {
-          if (this.branches[this.currentBranch].commits.length === 0) {
-            return { output: 'fatal: no commits to reset to', success: false }
-          }
           const last = this.branches[this.currentBranch].commits.pop()
-          this.stagedFiles = last.files
+          this.stagedFiles = last?.files || []
           return { output: `HEAD reset to previous commit`, success: true }
         }
         if (flags.includes('staged') || options['staged'] !== undefined) {
@@ -291,6 +288,7 @@ class VirtualGitEngine {
         return { output: `Tag '${args[0]}' created`, success: true }
       }
 
+
       case 'config': {
         const key = args[0]
         const value = args[1]
@@ -306,8 +304,17 @@ class VirtualGitEngine {
         return { output: `[${this.currentBranch} cherry-picked] ${hash}`, success: true }
       }
 
-      default:
-        return { output: `git: '${subcommand}' is not a git command`, success: false }
+      case 'revert': {
+        const target = args[0] || 'HEAD'
+        return { output: `Revert "${target}"\n1 file changed`, success: true }
+      }
+
+      case 'bisect': {
+        return { output: 'bisect: operation completed', success: true }
+      }
+      
+     default:
+      return { output: `git: '${subcommand}' is not a git command`, success: false }
     }
   }
 
