@@ -12,13 +12,15 @@ function getSessionKey(userId, stageId) {
   return stageId ? `${userId}_${stageId}` : userId
 }
 
-function getSession(userId, stageId, initialFiles = []) {
+function getSession(userId, stageId, initialFiles = [], category = '') {
   const key = getSessionKey(userId, stageId)
   if (!sessions[key]) {
     const vfs = new VirtualFileSystem(initialFiles)
+    const git = new VirtualGitEngine(vfs)
+    if (category === 'git') git.initialized = true
     sessions[key] = {
       vfs,
-      git: new VirtualGitEngine(vfs),
+      git,
       gdb: new VirtualGdbEngine(),
       pdb: new VirtualPdbEngine(),
     }
@@ -27,12 +29,14 @@ function getSession(userId, stageId, initialFiles = []) {
 }
 
 // ✅ initialFiles로 세션 완전히 새로 생성
-function resetSession(userId, stageId, initialFiles = []) {
+function resetSession(userId, stageId, initialFiles = [], category = '') {
   const key = getSessionKey(userId, stageId)
   const vfs = new VirtualFileSystem(initialFiles)
+  const git = new VirtualGitEngine(vfs)
+  if (category === 'git') git.initialized = true
   sessions[key] = {
     vfs,
-    git: new VirtualGitEngine(vfs),
+    git,
     gdb: new VirtualGdbEngine(),
     pdb: new VirtualPdbEngine(),
   }
@@ -49,7 +53,7 @@ function getStateByCategory(session, category) {
 
 // ✅ stageId, initialFiles 파라미터 추가
 function executeCommand(userId, command, category, stageId, initialFiles = []) {
-  const session = getSession(userId, stageId, initialFiles)
+  const session = getSession(userId, stageId, initialFiles, category)
   const parsed  = parseCommand(command)
 
   if (!parsed) return {

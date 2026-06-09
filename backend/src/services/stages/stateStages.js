@@ -19,7 +19,7 @@ const stateStages = [
   // GIT 심화
   // ══════════════════════════════════════════
   {
-    id: "git-adv-1",
+    id: "1090",
     category: 1090,
     difficulty: "심화",
     title: "선택적 파일 커밋",
@@ -61,7 +61,7 @@ const stateStages = [
   },
 
   {
-    id: "git-adv-2",
+    id: "1091",
     category: 1091,
     difficulty: "심화",
     title: "브랜치 전략 적용",
@@ -96,7 +96,7 @@ const stateStages = [
   // LINUX 심화
   // ══════════════════════════════════════════
   {
-    id: "linux-adv-1",
+    id: "1092",
     category: 1092,
     difficulty: "심화",
     title: "디렉토리 구조 만들기",
@@ -132,7 +132,7 @@ const stateStages = [
   },
 
   {
-    id: "linux-adv-2",
+    id: "1093",
     category: 1093,
     difficulty: "심화",
     title: "파일 정리하기",
@@ -171,7 +171,7 @@ const stateStages = [
   // GDB 심화
   // ══════════════════════════════════════════
   {
-    id: "gdb-adv-1",
+    id: "1094",
     category: 1094,
     difficulty: "심화",
     title: "브레이크포인트 설정 후 실행",
@@ -206,7 +206,7 @@ const stateStages = [
   // PDB 심화
   // ══════════════════════════════════════════
   {
-    id: "pdb-adv-1",
+    id: "1095",
     category: 1095,
     difficulty: "심화",
     title: "Python 디버깅 기본",
@@ -241,7 +241,7 @@ const stateStages = [
 // ─────────────────────────────────────────────
 
 function getStateStages()              { return stateStages }
-function getStateStageById(id)         { return stateStages.find(s => s.id === String(id)) }
+function getStateStageById(id)         { return stateStages.find(s => s.id === String(id) || s.category === Number(id)) }
 function getStateStagesByCategory(cat) { return stateStages.filter(s => s.category === cat) }
 
 module.exports = {

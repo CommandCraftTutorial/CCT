@@ -181,7 +181,7 @@ router.post('/:id/state-reset', async (req, res) => {
 
     const stage = getStateStageById(stageId)
     const initialFiles = stage?.initialFiles ?? []
-    resetSession(userId, stageId, initialFiles)
+    resetSession(userId, stageId, initialFiles, category)
 
     res.json({ success: true, message: '가상 저장소가 초기화되었습니다.' })
   } catch (err) {

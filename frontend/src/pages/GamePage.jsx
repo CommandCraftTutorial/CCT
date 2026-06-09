@@ -32,7 +32,7 @@ export default function GamePage() {
   )
 
   // ✅ stageId가 SCENARIO_STAGE_IDS에 있을 때만 시나리오형
-  const isScenarioMode = SCENARIO_STAGE_IDS.includes(String(stageId))
+  const isScenarioMode = SCENARIO_STAGE_IDS.includes(Number(stageId))
 
   const filterDescription = (description, answer) => {
     if (!description || !answer) return description;
@@ -79,7 +79,7 @@ export default function GamePage() {
         const stageData = res.data
 
         // ✅ 시나리오형 스테이지일 때만 가상 엔진 리셋
-        if (SCENARIO_STAGE_IDS.includes(String(stageId)) && typeof resetStateStage === 'function') {
+        if (SCENARIO_STAGE_IDS.includes(Number(stageId)) && typeof resetStateStage === 'function') {
           await resetStateStage(stageId, user.id || user.username || 'guest', gameConfig.category)
         }
 
@@ -97,7 +97,7 @@ export default function GamePage() {
   const handleCommand = async (command, term) => {
     try {
       // ✅ 시나리오형이면 state-submit, 아니면 기존 submit
-      const data = SCENARIO_STAGE_IDS.includes(String(stageId))
+      const data = SCENARIO_STAGE_IDS.includes(Number(stageId))
         ? await submitStateCommand(
             stageId,
             user.id || user.username || 'guest',
@@ -147,14 +147,15 @@ export default function GamePage() {
           }, 2000)
         }
       } else {
-        term.writeln('❌ 틀렸습니다. 힌트 버튼을 눌러보세요!')
-        if (data.feedback) {
-          term.writeln(`💡 ${data.feedback}`)
+        if (!SCENARIO_STAGE_IDS.includes(Number(stageId))) {
+          term.writeln('❌ 틀렸습니다. 힌트 버튼을 눌러보세요!')
+          if (data.feedback) {
+            term.writeln(`💡 ${data.feedback}`)
+          }
+          setWrongCount(prev => prev + 1)
+          setOverlay('fail')
+          setTimeout(() => setOverlay(null), 600)
         }
-        setWrongCount(prev => prev + 1)
-
-        setOverlay('fail')
-        setTimeout(() => setOverlay(null), 600)
       }
     } catch (err) {
       term.writeln('❌ 서버 오류가 발생했습니다.')
