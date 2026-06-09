@@ -21,7 +21,7 @@ export default function CategoryPage() {
         try {
 
           //주소 확인 
-          const res = await axios.get(`http://localhost:3000/api/stages/stats/${id}`);
+          const res = await axios.get(`${import.meta.env.VITE_API_URL}/stages/stats/${id}`);
           console.log(`${id} API 응답 원본:`, res.data);
 
           //기본값 설정

@@ -32,10 +32,19 @@ export default function CompetitionPage() {
     try {
       gameOverCalledRef.current = false
       const res = await api.get('/stages/random')
-      setStage(res.data)
+      const nextStage = res.data
+
+      setStage(nextStage)
       setTimer(30)
       setShowHint(false)
       setWrongCount(0)
+
+      if (nextStage?.difficulty === '심화') {
+        await api.post(`/stages/${nextStage.id}/state-reset`, {
+          userId: user.id,
+          category: nextStage.category
+        })
+      }
     } catch (err) {
       console.error(err)
     }
@@ -108,15 +117,15 @@ export default function CompetitionPage() {
       userId: user.id,
       mode: 'competition',
       combo,
-      timeLeft: timer
+      timeLeft: timer,
+      wrongCount
     })
 
-    const { passed } = res.data
+    const { passed, score: gainedScore, combo: nextCombo } = res.data
 
     if (passed) {
-      const newCombo = combo + 1
-      const bonus = newCombo >= 3 ? 50 : 0
-      const gained = 100 + bonus
+      const newCombo = nextCombo ?? combo + 1
+      const gained = gainedScore ?? 100
       const newScore = score + gained
 
       setCombo(newCombo)
@@ -127,7 +136,7 @@ export default function CompetitionPage() {
         ...prev,
         {
           type: 'success',
-          text: `✅ 정답! +${gained}점${bonus > 0 ? ` (콤보 보너스 +${bonus})` : ''}`
+          text: `✅ 정답! +${gained}점`
         },
         { type: 'success', text: `🔥 콤보: ${newCombo}` }
       ])
@@ -162,34 +171,29 @@ export default function CompetitionPage() {
 
   return (
     <div className="competition-page">
-      <header className="competition-header">
-        <button
-          className="competition-logo"
-          onClick={() => navigate('/mode')}
-        >
-          <span className="logo-prompt">›_</span>
-          CommandCraftTutorial
-        </button>
+      <header className="cct-header">
+        <div className="cct-brand">
+          <span className="cct-prompt">&gt;_</span>
+          <span className="cct-logo">CommandCraftTutorial</span>
+        </div>
 
-        <div className="competition-header-right">
-          <div className="header-pill">
-            <span className="header-pill-label">SCORE</span>
-            <span>{score}점</span>
+        <div className="cct-header-right">
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">SCORE</span>
+            <span className="cct-hud-value">{score}점</span>
           </div>
 
-          <div className="header-pill">
-            <span className="header-pill-label">COMBO</span>
-            <span>{combo}</span>
+          <div className="cct-hud-pill">
+            <span className="cct-hud-label">COMBO</span>
+            <span className="cct-hud-value">{combo}</span>
           </div>
 
-          <div className="header-user-pill">
-            👤 {user.username}
+          <div className="cct-pill">
+            <span>👤</span>
+            <span>{user.username || 'player01'}</span>
           </div>
 
-          <button
-            className="header-exit-button"
-            onClick={() => navigate('/mode')}
-          >
+          <button className="cct-icon-button" onClick={() => navigate('/mode')}>
             ✕
           </button>
         </div>

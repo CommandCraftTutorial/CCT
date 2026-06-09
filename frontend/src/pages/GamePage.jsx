@@ -232,7 +232,15 @@ export default function GamePage() {
           <aside className="mission-side-card">
             <div className="side-row">
               <span className="side-label">난이도</span>
-              <span className={`difficulty-pill ${stage?.difficulty === '기초' ? 'basic' : 'normal'}`}>
+              <span
+                className={`difficulty-pill ${
+                  stage?.difficulty === '기초'
+                    ? 'basic'
+                    : stage?.difficulty === '중급'
+                      ? 'normal'
+                      : 'hard'
+                }`}
+              >
                 {stage?.difficulty}
               </span>
             </div>

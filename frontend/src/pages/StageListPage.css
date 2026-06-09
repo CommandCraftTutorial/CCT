@@ -236,6 +236,12 @@
   border: 1px solid rgba(249, 226, 175, 0.42);
 }
 
+.stage-difficulty-badge.hard {
+  background: rgba(243, 139, 168, 0.1);
+  color: #f38ba8;
+  border: 1px solid rgba(243, 139, 168, 0.42);
+}
+
 .stage-card-mission {
   margin: 0;
 
