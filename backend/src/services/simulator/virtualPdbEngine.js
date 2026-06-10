@@ -30,17 +30,17 @@ class VirtualPdbEngine {
     switch (cmd) {
 
       case 'python': {
-        const mIdx = args.indexOf('-m')
-        if (mIdx !== -1 && args[mIdx + 1] === 'pdb') {
-          const script = args[mIdx + 2]
+        const module = parsed.options['m']
+        if (module === 'pdb') {
+          const script = parsed.args[0]
           if (!script) return { output: 'Usage: python -m pdb <script.py>', success: false }
           this.program = script
-          this.running = true
+          this.running = false
           this.currentLine = 1
           return {
             output: `> ${script}(1)<module>()\n-> ${this.sourceCode[0]?.split(': ')[1] || ''}\n(Pdb)`,
             success: true,
-            stateChange: { running: true, program: script }
+            stateChange: { running: false, program: script }
           }
         }
         return { output: 'Usage: python -m pdb <script.py>', success: false }
@@ -76,12 +76,21 @@ class VirtualPdbEngine {
 
       case 'c':
       case 'continue': {
+        this.running = true
         if (this.breakpoints.length > 0) {
           const bp = this.breakpoints[0]
           this.currentLine = bp
-          return { output: `> program.py(${bp})<module>()\n-> ${this.sourceCode[bp - 1]?.split(': ')[1] || ''}`, success: true }
+          return {
+            output: `> program.py(${bp})<module>()\n-> ${this.sourceCode[bp - 1]?.split(': ')[1] || ''}`,
+            success: true,
+            stateChange: { running: true }
+          }
         }
-        return { output: 'The program finished and will be restarted', success: true }
+        return {
+          output: 'The program finished and will be restarted',
+          success: true,
+          stateChange: { running: true }
+        }
       }
 
       case 'p':
@@ -175,6 +184,51 @@ class VirtualPdbEngine {
       case 'q':
       case 'quit': {
         return { output: 'Quitting PDB...', success: true }
+      }
+
+      case 'condition': {
+        const bp = args[0]
+        const cond = args.slice(1).join(' ')
+        if (!bp) return { output: '*** condition: missing breakpoint number', success: false }
+        return { output: `Breakpoint ${bp} now has condition '${cond}'`, success: true }
+      }
+
+      case 'commands': {
+        const bp = args[0] || '1'
+        return { output: `(com) end`, success: true }
+      }
+
+      case 'unt':
+      case 'until': {
+        const line = parseInt(args[0]) || this.currentLine + 1
+        this.currentLine = line
+        return { output: `> program.py(${line})<module>()`, success: true }
+      }
+
+      case 'tbreak': {
+        const line = parseInt(args[0])
+        if (isNaN(line)) return { output: '*** tbreak: missing line number', success: false }
+        return { output: `Temporary breakpoint ${this.breakpoints.length + 1} at line ${line}`, success: true }
+      }
+
+      case 'ignore': {
+        const bp = args[0]
+        const count = args[1]
+        if (!bp || !count) return { output: '*** ignore: missing arguments', success: false }
+        return { output: `Will ignore next ${count} crossings of breakpoint ${bp}.`, success: true }
+      }
+
+      case 'alias': {
+        const name = args[0]
+        const cmd = args.slice(1).join(' ')
+        if (!name) return { output: '*** alias: missing name', success: false }
+        return { output: `alias ${name} = ${cmd}`, success: true }
+      }
+
+      case 'debug': {
+        const expr = args.join(' ')
+        if (!expr) return { output: '*** debug: missing expression', success: false }
+        return { output: `> program.py(1)<module>()\n-> ${expr}`, success: true }
       }
 
       default:
