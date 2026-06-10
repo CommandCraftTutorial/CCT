@@ -11,7 +11,7 @@ import {
 import './GamePage.css'
 
 // ✅ stateStages.js에 있는 시나리오형 스테이지 id 목록
-const SCENARIO_STAGE_IDS = [1090, 1091, 1092, 1093, 1094, 1095]
+const SCENARIO_STAGE_IDS = [69, 70, 120, 121, 145, 179]
 
 export default function GamePage() {
   const [stage, setStage] = useState(null)

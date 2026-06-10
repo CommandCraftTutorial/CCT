@@ -10,7 +10,7 @@ class VirtualGdbEngine {
     this.watchpoints = []
     this.currentLine = 0
     this.variables = { x: 10, y: 20, result: 0 }
-    this.callStack = ['main']
+    this.callStack = ['main', 'start', '__libc_start_main']
     this.bpCounter = 0
     this.sourceCode = [
       '1: int main() {',
@@ -48,11 +48,10 @@ class VirtualGdbEngine {
         const prog = args[0]
         if (!prog) return { output: 'Usage: file <executable>', success: false }
         this.program = prog
-        this.running = true
         return {
           output: `Reading symbols from ${prog}...\n(No debugging symbols found in ${prog})`,
           success: true,
-          stateChange: { running: true, program: prog }
+          stateChange: { program: prog }
         }
       }
 
@@ -336,10 +335,18 @@ class VirtualGdbEngine {
       }
 
       case 'set': {
-        const cleanArgs = args.filter(a => a !== 'var' && a !== '=')
-        if (cleanArgs.length >= 2) {
-          const name = cleanArgs[0]
-          const val = isNaN(cleanArgs[1]) ? cleanArgs[1] : parseInt(cleanArgs[1])
+        const filtered = args.filter(a => a !== 'var')
+        const joined = filtered.join(' ')
+        const eqMatch = joined.match(/^(\w+)\s*=\s*(.+)$/)
+        if (eqMatch) {
+          const name = eqMatch[1]
+          const val = isNaN(eqMatch[2]) ? eqMatch[2] : parseInt(eqMatch[2])
+          this.variables[name] = val
+          return { output: `${name} = ${val}`, success: true }
+        }
+        if (filtered.length >= 2) {
+          const name = filtered[0]
+          const val = isNaN(filtered[1]) ? filtered[1] : parseInt(filtered[1])
           this.variables[name] = val
           return { output: `${name} = ${val}`, success: true }
         }
@@ -367,8 +374,12 @@ class VirtualGdbEngine {
 
       case 'frame':
       case 'f': {
-        const frameNum = parseInt(args[0]) || 0
-        return { output: `#${frameNum}  ${this.callStack[frameNum] || 'unknown'} () at program.c:${this.currentLine}`, success: true }
+        const frameNum = parseInt(args[0])
+        if (args[0] && isNaN(frameNum)) {
+          return { output: `Invalid frame number: ${args[0]}`, success: false }
+        }
+        const num = frameNum || 0
+        return { output: `#${num}  ${this.callStack[num] || 'unknown'} () at program.c:${this.currentLine}`, success: true }
       }
 
       case 'up': {
@@ -381,6 +392,9 @@ class VirtualGdbEngine {
       }
 
       case 'x': {
+        if (!args[0]) {
+          return { output: `Argument required (starting display address).`, success: false }
+        }
         return { output: `0x7fffffffe000: 0x0000000a\t0x00000014\t0x00000000`, success: true }
       }
 
@@ -520,6 +534,16 @@ class VirtualGdbEngine {
           ].join('\n'),
           success: true
         }
+      }
+
+      case 'catch': {
+        const event = args[0] || 'throw'
+        return { output: `Catchpoint 1 (${event})`, success: true }
+      }
+
+      case 'core': {
+        const file = args[0] || 'core'
+        return { output: `Core file '${file}' loaded.`, success: true }
       }
 
       default:

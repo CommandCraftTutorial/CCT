@@ -21,7 +21,7 @@ class VirtualFileSystem {
             children: {
               'user': {
                 type: 'dir',
-                children:  userFiles
+                children: userFiles
               }
             }
           },
@@ -33,7 +33,6 @@ class VirtualFileSystem {
     this.history = []
   }
 
-  // 현재 노드 가져오기
   getNode(path) {
     const parts = path === '/' ? [''] : path.split('/')
     let node = this.structure['/']
@@ -45,10 +44,13 @@ class VirtualFileSystem {
     return node
   }
 
-  // 경로 정규화
   resolvePath(path) {
     if (!path) return this.currentPath
     if (path === '~') return '/home/user'
+
+    // trailing slash 제거
+    path = path.replace(/\/$/, '')
+
     if (path.startsWith('/')) return path
 
     const base = this.currentPath.split('/').filter(Boolean)
@@ -62,7 +64,6 @@ class VirtualFileSystem {
     return '/' + base.join('/')
   }
 
-  // 명령어 실행
   execute(parsed) {
     const { base, subcommand, args, flags, options } = parsed
     this.history.push(parsed.raw)
@@ -165,6 +166,15 @@ class VirtualFileSystem {
           return { output: `mv: '${args[0]}': No such file or directory`, success: false }
         }
 
+        const dstNode = this.getNode(dstPath)
+
+        // 목적지가 디렉토리면 그 안으로 이동
+        if (dstNode && dstNode.type === 'dir') {
+          dstNode.children[srcName] = srcParent.children[srcName]
+          delete srcParent.children[srcName]
+          return { output: `'${args[0]}' → '${args[1]}'`, success: true, moved: { from: args[0], to: args[1] } }
+        }
+
         const dstParts = dstPath.split('/').filter(Boolean)
         const dstName = dstParts.pop()
         const dstParent = this.getNode('/' + dstParts.join('/'))
@@ -185,6 +195,16 @@ class VirtualFileSystem {
 
         const srcNode = this.getNode(srcPath)
         if (!srcNode) return { output: `cp: '${args[0]}': No such file or directory`, success: false }
+
+        const dstNode = this.getNode(dstPath)
+
+        // 목적지가 디렉토리면 그 안으로 복사
+        if (dstNode && dstNode.type === 'dir') {
+          const srcParts = srcPath.split('/').filter(Boolean)
+          const srcName = srcParts[srcParts.length - 1]
+          dstNode.children[srcName] = JSON.parse(JSON.stringify(srcNode))
+          return { output: `'${args[0]}' copied to '${args[1]}'`, success: true, copied: { from: args[0], to: args[1] } }
+        }
 
         const dstParts = dstPath.split('/').filter(Boolean)
         const dstName = dstParts.pop()
@@ -230,7 +250,7 @@ class VirtualFileSystem {
 
       case 'find': {
         const searchPath = args[0] || '.'
-        const namePattern = options['name'] || options['name']
+        const namePattern = options['name']
         const resolvedPath = this.resolvePath(searchPath)
         const results = []
 
@@ -261,6 +281,73 @@ class VirtualFileSystem {
           output: 'Filesystem  Size  Used  Avail  Use%  Mounted on\n/dev/sda1   50G   20G   30G    40%   /',
           success: true
         }
+
+      case 'du': {
+        const target = args[0] || '.'
+        const targetPath = this.resolvePath(target)
+        const node = this.getNode(targetPath)
+        if (!node) return { output: `du: cannot access '${target}': No such file or directory`, success: false }
+        if (flags.includes('s') && flags.includes('h')) {
+          return { output: `4.0K\t${target}`, success: true }
+        }
+        if (flags.includes('s')) {
+          return { output: `4\t${target}`, success: true }
+        }
+        if (flags.includes('h')) {
+          return { output: `4.0K\t${target}`, success: true }
+        }
+        return { output: `4\t${target}`, success: true }
+      }
+
+      case 'kill': {
+        const pid = args[0]
+        if (!pid) return { output: 'kill: missing PID', success: false }
+        if (isNaN(pid)) return { output: `kill: ${pid}: not a valid PID`, success: false }
+        return { output: ``, success: true }
+      }
+
+      case 'tar': {
+        if (!args[0]) return { output: 'tar: missing operand', success: false }
+        if (flags.includes('c') && flags.includes('z') && flags.includes('v') && flags.includes('f')) {
+          return { output: `${args[0]}\n${args[1]}`, success: true }
+        }
+        if (flags.includes('x') && flags.includes('z') && flags.includes('v') && flags.includes('f')) {
+          return { output: `${args[0]}`, success: true }
+        }
+        return { output: `tar: operation completed`, success: true }
+      }
+
+      case 'ln': {
+        if (args.length < 2) return { output: 'ln: missing operand', success: false }
+        if (!flags.includes('s')) return { output: 'ln: missing -s flag for symbolic link', success: false }
+        return { output: `'${args[1]}' -> '${args[0]}'`, success: true }
+      }
+
+      case 'awk': {
+        if (!args[0]) return { output: 'awk: missing program', success: false }
+        return { output: `awk: executed`, success: true }
+      }
+
+      case 'sed': {
+        if (!args[0]) return { output: 'sed: missing expression', success: false }
+        return { output: `sed: executed`, success: true }
+      }
+
+      case 'curl': {
+        if (!args[0]) return { output: 'curl: missing URL', success: false }
+        return { output: `curl: (200) OK`, success: true }
+      }
+
+      case 'ssh': {
+        if (!args[0]) return { output: 'ssh: missing destination', success: false }
+        return { output: `ssh: connected to ${args[0]}`, success: true }
+      }
+
+      case 'crontab': {
+        if (!flags.includes('e') && !args[0]) return { output: 'crontab: missing operand', success: false }
+        if (flags.includes('e')) return { output: `crontab: opening editor...`, success: true }
+        return { output: `crontab: executed`, success: true }
+      }
 
       default:
         return { output: `${base}: command not found`, success: false }
