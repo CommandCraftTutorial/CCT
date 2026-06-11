@@ -55,6 +55,8 @@ CommandCraftTutorial은 Git, Linux, GDB, PDB 등 개발자가 자주 사용하�
 ---
 
 ## 📁 프로젝트 구조
+
+```
 CCT/
 ├── frontend/
 │   └── src/
@@ -71,24 +73,24 @@ CCT/
 │           └── stateStageApi.js
 │
 └── backend/
-└── src/
-├── routes/
-│   ├── stage.js
-│   └── user.js
-└── services/
-├── simulator/
-│   ├── engineManager.js
-│   ├── virtualFileSystem.js
-│   ├── virtualGitEngine.js
-│   ├── virtualGdbEngine.js
-│   └── virtualPdbEngine.js
-├── grader/
-│   └── grader.js
-├── parser/
-│   └── commandParser.js
-└── stages/
-└── stateStages.js
-
+    └── src/
+        ├── routes/
+        │   ├── stage.js
+        │   └── user.js
+        └── services/
+            ├── simulator/
+            │   ├── engineManager.js
+            │   ├── virtualFileSystem.js
+            │   ├── virtualGitEngine.js
+            │   ├── virtualGdbEngine.js
+            │   └── virtualPdbEngine.js
+            ├── grader/
+            │   └── grader.js
+            ├── parser/
+            │   └── commandParser.js
+            └── stages/
+                └── stateStages.js
+```
 ---
 
 ## 🚀 시작하기
