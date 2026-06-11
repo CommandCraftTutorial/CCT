@@ -2,7 +2,7 @@ const { parseCommand } = require('../parser/commandParser')
 
 class VirtualGitEngine {
   constructor(vfs) {
-    this.vfs = vfs  // VirtualFileSystem 참조
+    this.vfs = vfs
     this.reset()
   }
 
@@ -23,15 +23,6 @@ class VirtualGitEngine {
     const { subcommand, args, options, flags } = parsed
 
     if (!subcommand) return { output: 'git: missing subcommand', success: false }
-
-    // git init 없이 다른 명령어 실행 시
-    /*if (!this.initialized && subcommand !== 'init' && subcommand !== '--version' && subcommand !== 'config') {
-      return {
-        output: 'fatal: not a git repository (or any of the parent directories): .git',
-        success: false,
-        feedback: 'Git 저장소를 먼저 초기화해야 합니다. git init 을 실행하세요.'
-      }
-    }*/
 
     switch (subcommand) {
       case '--version':
@@ -87,11 +78,12 @@ class VirtualGitEngine {
             stateChange: { stagedFiles: this.stagedFiles }
           }
         } else {
-          if (!this.stagedFiles.includes(args[0])) {
-            this.stagedFiles.push(args[0])
-          }
+          const filesToAdd = args.filter(a => a)
+          filesToAdd.forEach(f => {
+            if (!this.stagedFiles.includes(f)) this.stagedFiles.push(f)
+          })
           return {
-            output: `Added '${args[0]}' to staging area`,
+            output: `Added '${filesToAdd.join(', ')}' to staging area`,
             success: true,
             stateChange: { stagedFiles: this.stagedFiles }
           }
@@ -114,7 +106,7 @@ class VirtualGitEngine {
           timestamp: new Date().toISOString()
         }
         this.branches[this.currentBranch].commits.push(commit)
-        this.trackedFiles = [...new Set([...this.trackedFiles, ...commit.files])] 
+        this.trackedFiles = [...new Set([...this.trackedFiles, ...commit.files])]
         this.stagedFiles = []
         return {
           output: `[${this.currentBranch} ${commit.hash}] ${message}\n ${commit.files.length} file(s) changed`,
@@ -128,13 +120,13 @@ class VirtualGitEngine {
         if (commits.length === 0) {
           return { output: 'fatal: your current branch has no commits yet', success: false }
         }
-        const logLines = commits.slice().reverse().map(c =>
-          `commit ${c.hash}\n  ${c.message}`
-        )
         if (flags.includes('oneline') || options['oneline'] !== undefined) {
           const oneLines = commits.slice().reverse().map(c => `${c.hash} ${c.message}`)
           return { output: oneLines.join('\n'), success: true }
         }
+        const logLines = commits.slice().reverse().map(c =>
+          `commit ${c.hash}\n  ${c.message}`
+        )
         return { output: logLines.join('\n\n'), success: true }
       }
 
@@ -256,21 +248,40 @@ class VirtualGitEngine {
         if (flags.includes('soft') || options['soft'] !== undefined) {
           const last = this.branches[this.currentBranch].commits.pop()
           this.stagedFiles = last?.files || []
-          return { output: `HEAD reset to previous commit`, success: true }
+          return { output: `HEAD is now at previous commit`, success: true }
+        }
+        if (flags.includes('hard') || options['hard'] !== undefined) {
+          this.branches[this.currentBranch].commits.pop()
+          this.stagedFiles = []
+          return { output: `HEAD is now at previous commit`, success: true }
+        }
+        if (flags.includes('mixed') || options['mixed'] !== undefined) {
+          const last = this.branches[this.currentBranch].commits.pop()
+          this.stagedFiles = []
+          return {
+            output: `Unstaged changes after reset:\n${last?.files?.map(f => `M\t${f}`).join('\n') || ''}`,
+            success: true
+          }
         }
         if (flags.includes('staged') || options['staged'] !== undefined) {
           const file = args[0]
           this.stagedFiles = this.stagedFiles.filter(f => f !== file)
           return { output: `Unstaged '${file}'`, success: true }
         }
-        return { output: 'HEAD reset', success: true }
+        // 기본값 --mixed
+        this.stagedFiles = []
+        return { output: '', success: true }
       }
 
       case 'restore': {
         if (options['staged']) {
-          const file = args[0]
-          this.stagedFiles = this.stagedFiles.filter(f => f !== file)
-          return { output: `Unstaged '${file}'`, success: true, stateChange: { stagedFiles: this.stagedFiles } }
+          const file = args[0] || '.'
+          if (file === '.') {
+            this.stagedFiles = []
+          } else {
+            this.stagedFiles = this.stagedFiles.filter(f => f !== file)
+          }
+          return { output: ``, success: true, stateChange: { stagedFiles: this.stagedFiles } }
         }
         return { output: `Restored '${args[0]}'`, success: true }
       }
@@ -284,10 +295,14 @@ class VirtualGitEngine {
         if (!args[0]) {
           return { output: this.tags.join('\n') || '(no tags)', success: true }
         }
-        this.tags.push(args[0])
-        return { output: `Tag '${args[0]}' created`, success: true }
+        const tagName = args[0]
+        const message = options['m'] || options['message'] || ''
+        this.tags.push(tagName)
+        if (message) {
+          return { output: `Tag '${tagName}' created with message '${message}'`, success: true }
+        }
+        return { output: `Tag '${tagName}' created`, success: true }
       }
-
 
       case 'config': {
         const key = args[0]
@@ -301,6 +316,7 @@ class VirtualGitEngine {
 
       case 'cherry-pick': {
         const hash = args[0]
+        if (!hash) return { output: 'error: missing commit hash', success: false }
         return { output: `[${this.currentBranch} cherry-picked] ${hash}`, success: true }
       }
 
@@ -312,9 +328,9 @@ class VirtualGitEngine {
       case 'bisect': {
         return { output: 'bisect: operation completed', success: true }
       }
-      
-     default:
-      return { output: `git: '${subcommand}' is not a git command`, success: false }
+
+      default:
+        return { output: `git: '${subcommand}' is not a git command`, success: false }
     }
   }
 
