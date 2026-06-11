@@ -1,5 +1,3 @@
-// services/grader/grader.js
-
 function gradeCommand(input, stage) {
   if (!input) return false
   const trimmed = input.trim()
@@ -24,7 +22,6 @@ function gradeCommand(input, stage) {
   return false
 }
 
-// ✅ 심화 시나리오형 채점
 function gradeState(state, stage) {
   if (!stage.clearCondition) {
     return { passed: false, checks: [] }
@@ -45,7 +42,7 @@ function gradeStudy(input, stage) {
   return { passed: gradeCommand(input, stage), mode: 'study' }
 }
 
-function gradeCompetition(input, stage, combo = 0, timeLeft = 30, wrongCount = 0, passedOverride = null) {
+function gradeCompetition(input, stage, combo = 0, timeLeft = 180, wrongCount = 0, passedOverride = null) {
   const passed = passedOverride ?? gradeCommand(input, stage)
   if (!passed) return { passed: false, score: 0, combo: 0, mode: 'competition' }
 
@@ -54,7 +51,11 @@ function gradeCompetition(input, stage, combo = 0, timeLeft = 30, wrongCount = 0
   if (newCombo >= 3) score += 50
   if (newCombo >= 5) score += 50
   if (newCombo >= 10) score += 100
-  score += timeLeft * 2
+
+  // 1분(60초) 미만일 때만 남은 시간 보너스
+  if (timeLeft < 60) {
+    score += timeLeft * 2
+  }
 
   const wrongPenalty = wrongCount * 10
   score = Math.max(0, score - wrongPenalty)
