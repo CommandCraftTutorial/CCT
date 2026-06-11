@@ -10,7 +10,7 @@ export default function LeaderboardPage() {
   const user = JSON.parse(localStorage.getItem('user') || '{}')
 
   useEffect(() => {
-    getLeaderboard()
+    getLeaderboard('competition')
       .then(res => {
         setRankings(res.data)
         setLoading(false)
@@ -41,7 +41,7 @@ export default function LeaderboardPage() {
         <div className="cct-brand">
           <span className="cct-prompt">&gt;_</span>
           <span className="cct-logo">CommandCraftTutorial</span>
-      </div>
+        </div>
 
         <div className="cct-header-right">
           <div className="cct-pill">
@@ -100,7 +100,7 @@ export default function LeaderboardPage() {
                 </span>
 
                 <strong>
-                  {myRankIndex + 1}위 · {myRanking?.score}점
+                  {myRankIndex + 1}위 · {myRanking?.competition_score}점
                 </strong>
               </div>
             )}
@@ -138,7 +138,7 @@ export default function LeaderboardPage() {
                     </div>
 
                     <div className="leaderboard-score">
-                      {player.score}
+                      {player.competition_score}
                       <span> XP</span>
                     </div>
                   </article>

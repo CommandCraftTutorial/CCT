@@ -8,13 +8,15 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 })
 
+const TOTAL_TIME = 180 // 3분
+
 export default function CompetitionPage() {
   const [stage, setStage] = useState(null)
   const [input, setInput] = useState('')
   const [history, setHistory] = useState([])
   const [score, setScore] = useState(0)
   const [combo, setCombo] = useState(0)
-  const [timer, setTimer] = useState(30)
+  const [timer, setTimer] = useState(TOTAL_TIME)
   const [gameOver, setGameOver] = useState(false)
   const [rankings, setRankings] = useState([])
   const [showHint, setShowHint] = useState(false)
@@ -24,6 +26,8 @@ export default function CompetitionPage() {
   const timerRef = useRef(null)
   const bottomRef = useRef(null)
   const gameOverCalledRef = useRef(false)
+  const usedStageIdsRef = useRef(new Set())
+  const scoreRef = useRef(0)
 
   const navigate = useNavigate()
   const user = JSON.parse(localStorage.getItem('user') || '{}')
@@ -31,11 +35,20 @@ export default function CompetitionPage() {
   const fetchRandomStage = async () => {
     try {
       gameOverCalledRef.current = false
-      const res = await api.get('/stages/random')
-      const nextStage = res.data
+      const res = await api.get('/stages')
+      const allStages = res.data
+
+      const remaining = allStages.filter(s => !usedStageIdsRef.current.has(s.id))
+
+      if (remaining.length === 0) {
+        usedStageIdsRef.current.clear()
+        remaining.push(...allStages)
+      }
+
+      const nextStage = remaining[Math.floor(Math.random() * remaining.length)]
+      usedStageIdsRef.current.add(nextStage.id)
 
       setStage(nextStage)
-      setTimer(30)
       setShowHint(false)
       setWrongCount(0)
 
@@ -55,19 +68,9 @@ export default function CompetitionPage() {
     setRankings(res.data.slice(0, 5))
   }
 
+  // 전체 타이머 - 한 번만 시작
   useEffect(() => {
-    if (!user.id) {
-      navigate('/')
-      return
-    }
-
-    fetchRandomStage()
-    fetchRankings()
-    inputRef.current?.focus()
-  }, [])
-
-  useEffect(() => {
-    if (gameOver) return
+    if (!user.id) return
 
     timerRef.current = setInterval(() => {
       setTimer(prev => {
@@ -81,7 +84,18 @@ export default function CompetitionPage() {
     }, 1000)
 
     return () => clearInterval(timerRef.current)
-  }, [stage, gameOver])
+  }, [])
+
+  useEffect(() => {
+    if (!user.id) {
+      navigate('/')
+      return
+    }
+
+    fetchRandomStage()
+    fetchRankings()
+    inputRef.current?.focus()
+  }, [])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -99,7 +113,7 @@ export default function CompetitionPage() {
       { type: 'error', text: '⏰ 시간 초과! 게임 오버!' }
     ])
 
-    await updateProgress(user.id, 1, score, 'competition')
+    await updateProgress(user.id, 1, scoreRef.current, 'competition')
     fetchRankings()
   }
 
@@ -128,16 +142,13 @@ export default function CompetitionPage() {
       const gained = gainedScore ?? 100
       const newScore = score + gained
 
+      scoreRef.current = newScore
       setCombo(newCombo)
-      setScore(prev => prev + gained)
-      clearInterval(timerRef.current)
+      setScore(newScore)
 
       setHistory(prev => [
         ...prev,
-        {
-          type: 'success',
-          text: `✅ 정답! +${gained}점`
-        },
+        { type: 'success', text: `✅ 정답! +${gained}점` },
         { type: 'success', text: `🔥 콤보: ${newCombo}` }
       ])
 
@@ -158,9 +169,15 @@ export default function CompetitionPage() {
   }
 
   const getTimerColor = () => {
-    if (timer > 20) return '#a6e3a1'
-    if (timer > 10) return '#f9e2af'
+    if (timer > 120) return '#a6e3a1'
+    if (timer > 60) return '#f9e2af'
     return '#f38ba8'
+  }
+
+  const formatTime = (seconds) => {
+    const m = Math.floor(seconds / 60)
+    const s = seconds % 60
+    return `${m}:${String(s).padStart(2, '0')}`
   }
 
   const getDifficultyClass = () => {
@@ -237,7 +254,7 @@ export default function CompetitionPage() {
               <div className="status-row">
                 <span>남은 시간</span>
                 <span className="timer" style={{ color: getTimerColor() }}>
-                  {timer}s
+                  {formatTime(timer)}
                 </span>
               </div>
 
@@ -252,7 +269,6 @@ export default function CompetitionPage() {
               >
                 💡 힌트 {showHint ? '숨기기' : '보기'}
               </button>
-
             </aside>
           </section>
 
@@ -268,8 +284,8 @@ export default function CompetitionPage() {
             </div>
 
             <div className="score-stat">
-              <span>제한 시간</span>
-              <strong style={{ color: getTimerColor() }}>{timer}s</strong>
+              <span>남은 시간</span>
+              <strong style={{ color: getTimerColor() }}>{formatTime(timer)}</strong>
             </div>
           </section>
 
@@ -303,7 +319,7 @@ export default function CompetitionPage() {
                 {history.length === 0 && (
                   <div className="terminal-guide">
                     <p>🚀 경쟁 모드에 오신 것을 환영합니다.</p>
-                    <p>💬 제한 시간 안에 명령어를 입력하세요.</p>
+                    <p>💬 3분 안에 최대한 많은 문제를 푸세요!</p>
                   </div>
                 )}
 
@@ -358,6 +374,10 @@ export default function CompetitionPage() {
                           setCombo(0)
                           setGameOver(false)
                           setHistory([])
+                          setTimer(TOTAL_TIME)
+                          scoreRef.current = 0
+                          usedStageIdsRef.current.clear()
+                          gameOverCalledRef.current = false
                           fetchRandomStage()
                         }}
                       >
@@ -397,8 +417,7 @@ export default function CompetitionPage() {
 
                     <span className={`ranking-name ${
                       player.username === user.username ? 'ranking-name-me' : ''
-                    }`}
-                    >
+                    }`}>
                       {player.username}
                       {player.username === user.username && (
                         <span className="me-tag"> (나)</span>
@@ -434,7 +453,6 @@ export default function CompetitionPage() {
           >
             <div className="hint-modal-header">
               <span>💡 Hint</span>
-
               <button
                 className="hint-modal-close"
                 onClick={() => setShowHint(false)}
@@ -449,7 +467,6 @@ export default function CompetitionPage() {
           </div>
         </div>
       )}
-
     </div>
   )
 }
