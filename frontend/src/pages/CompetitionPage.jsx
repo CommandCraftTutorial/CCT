@@ -8,7 +8,8 @@ const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3000/api'
 })
 
-const TOTAL_TIME = 180 // 3분
+const TOTAL_TIME = 180
+const SCENARIO_STAGE_IDS = [69, 70, 120, 121, 145, 179]
 
 export default function CompetitionPage() {
   const [stage, setStage] = useState(null)
@@ -52,7 +53,7 @@ export default function CompetitionPage() {
       setShowHint(false)
       setWrongCount(0)
 
-      if (nextStage?.difficulty === '심화') {
+      if (SCENARIO_STAGE_IDS.includes(Number(nextStage.id))) {
         await api.post(`/stages/${nextStage.id}/state-reset`, {
           userId: user.id,
           category: nextStage.category
@@ -68,9 +69,25 @@ export default function CompetitionPage() {
     setRankings(res.data.slice(0, 5))
   }
 
-  // 전체 타이머 - 한 번만 시작
+  const saveScore = async () => {
+    await updateProgress(user.id, 1, scoreRef.current, 'competition')
+  }
+
   useEffect(() => {
-    if (!user.id) return
+    if (!user.id) {
+      navigate('/')
+      return
+    }
+
+    fetchRandomStage()
+    fetchRankings()
+    inputRef.current?.focus()
+  }, [])
+
+  useEffect(() => {
+    if (gameOver) return
+
+    clearInterval(timerRef.current)
 
     timerRef.current = setInterval(() => {
       setTimer(prev => {
@@ -84,18 +101,7 @@ export default function CompetitionPage() {
     }, 1000)
 
     return () => clearInterval(timerRef.current)
-  }, [])
-
-  useEffect(() => {
-    if (!user.id) {
-      navigate('/')
-      return
-    }
-
-    fetchRandomStage()
-    fetchRankings()
-    inputRef.current?.focus()
-  }, [])
+  }, [gameOver])
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -113,7 +119,7 @@ export default function CompetitionPage() {
       { type: 'error', text: '⏰ 시간 초과! 게임 오버!' }
     ])
 
-    await updateProgress(user.id, 1, scoreRef.current, 'competition')
+    await saveScore()
     fetchRankings()
   }
 
@@ -126,45 +132,69 @@ export default function CompetitionPage() {
     setHistory(prev => [...prev, { type: 'input', text: command }])
     setInput('')
 
-    const res = await api.post(`/stages/${stage.id}/submit`, {
-      command,
-      userId: user.id,
-      mode: 'competition',
-      combo,
-      timeLeft: timer,
-      wrongCount
-    })
+    try {
+      const isScenario = SCENARIO_STAGE_IDS.includes(Number(stage.id))
 
-    const { passed, score: gainedScore, combo: nextCombo } = res.data
+      const res = isScenario
+        ? await api.post(`/stages/${stage.id}/state-submit`, {
+            command,
+            userId: user.id,
+            category: stage.category
+          })
+        : await api.post(`/stages/${stage.id}/submit`, {
+            command,
+            userId: user.id,
+            mode: 'competition',
+            combo,
+            timeLeft: timer,
+            wrongCount
+          })
 
-    if (passed) {
-      const newCombo = nextCombo ?? combo + 1
-      const gained = gainedScore ?? 100
-      const newScore = score + gained
+      const data = res.data
 
-      scoreRef.current = newScore
-      setCombo(newCombo)
-      setScore(newScore)
+      if (data.output) {
+        setHistory(prev => [...prev, { type: 'output', text: data.output }])
+      }
 
-      setHistory(prev => [
-        ...prev,
-        { type: 'success', text: `✅ 정답! +${gained}점` },
-        { type: 'success', text: `🔥 콤보: ${newCombo}` }
-      ])
+      if (data.checks && data.checks.length > 0) {
+        data.checks.forEach(c => {
+          setHistory(prev => [
+            ...prev,
+            { type: c.passed ? 'success' : 'error', text: `${c.passed ? '✅' : '⬜'} ${c.label}` }
+          ])
+        })
+      }
 
-      await updateProgress(user.id, 1, newScore, 'competition')
-      fetchRankings()
+      if (data.passed) {
+        const newCombo = isScenario ? combo + 1 : (data.combo ?? combo + 1)
+        const gained = isScenario ? 100 : (data.score ?? 100)
+        const newScore = score + gained
 
-      setTimeout(() => fetchRandomStage(), 1000)
-    } else {
-      const newWrong = wrongCount + 1
-      setWrongCount(newWrong)
-      setCombo(0)
+        scoreRef.current = newScore
+        setCombo(newCombo)
+        setScore(newScore)
 
-      setHistory(prev => [
-        ...prev,
-        { type: 'error', text: '❌ 틀렸습니다!' }
-      ])
+        setHistory(prev => [
+          ...prev,
+          { type: 'success', text: `✅ 정답! +${gained}점` },
+          { type: 'success', text: `🔥 콤보: ${newCombo}` }
+        ])
+
+        fetchRankings()
+        setTimeout(() => fetchRandomStage(), 1000)
+      } else {
+        const newWrong = wrongCount + 1
+        setWrongCount(newWrong)
+        setCombo(0)
+
+        setHistory(prev => [
+          ...prev,
+          { type: 'error', text: '❌ 틀렸습니다!' }
+        ])
+      }
+    } catch (err) {
+      console.error(err)
+      setHistory(prev => [...prev, { type: 'error', text: '❌ 서버 오류가 발생했습니다.' }])
     }
   }
 
@@ -210,7 +240,13 @@ export default function CompetitionPage() {
             <span>{user.username || 'player01'}</span>
           </div>
 
-          <button className="cct-icon-button" onClick={() => navigate('/mode')}>
+          <button
+            className="cct-icon-button"
+            onClick={async () => {
+              await saveScore()
+              navigate('/mode')
+            }}
+          >
             ✕
           </button>
         </div>
@@ -386,7 +422,10 @@ export default function CompetitionPage() {
 
                       <button
                         className="btn-exit"
-                        onClick={() => navigate('/mode')}
+                        onClick={async () => {
+                          await saveScore()
+                          navigate('/mode')
+                        }}
                       >
                         나가기
                       </button>
